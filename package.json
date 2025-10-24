@@ -1,9 +1,0 @@
-{
-  "name": "video-downloader-web",
-  "version": "1.0.0",
-  "type": "module",
-  "scripts": {
-    "build": "echo 'No build required'",
-    "start": "echo 'Static site'"
-  }
-}
