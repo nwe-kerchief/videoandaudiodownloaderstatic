@@ -1,0 +1,12 @@
+{
+  "name": "video-downloader-web",
+  "version": "1.0.0",
+  "description": "Web interface for video downloader",
+  "scripts": {
+    "build": "echo 'No build step required'",
+    "start": "echo 'Static site'"
+  },
+  "keywords": ["video", "download", "youtube", "tiktok"],
+  "author": "",
+  "license": "MIT"
+}
