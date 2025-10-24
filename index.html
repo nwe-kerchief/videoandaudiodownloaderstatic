@@ -2,54 +2,120 @@
 <html>
 <head>
     <title>Video Downloader - AWS Lambda</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
-        .container { background: #f5f5f5; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1 { color: #333; text-align: center; }
-        input, select, button { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; font-size: 16px; }
-        button { background: #007bff; color: white; border: none; cursor: pointer; }
-        button:hover { background: #0056b3; }
-        button:disabled { background: #6c757d; cursor: not-allowed; }
-        #status { margin: 20px 0; padding: 15px; border-radius: 5px; min-height: 20px; }
+        * { box-sizing: border-box; }
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 600px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 15px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-top: 20px;
+        }
+        h1 { 
+            color: #333; 
+            text-align: center; 
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        input, select, button { 
+            width: 100%; 
+            padding: 15px; 
+            margin: 10px 0; 
+            border: 2px solid #e0e0e0; 
+            border-radius: 8px; 
+            font-size: 16px; 
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        button { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; 
+            border: none; 
+            cursor: pointer; 
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+        button:hover { 
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        button:disabled { 
+            background: #ccc; 
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        #status { 
+            margin: 20px 0; 
+            padding: 15px; 
+            border-radius: 8px; 
+            min-height: 20px;
+            text-align: center;
+        }
         .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
         .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
         .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .api-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        .api-info code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🎬 Video Downloader</h1>
-        <p><strong>AWS Lambda Backend - Basic Version</strong></p>
+        <div class="subtitle">AWS Lambda Backend - Test Version</div>
         
-        <input type="text" id="url" placeholder="Paste YouTube or TikTok URL here">
+        <input type="text" id="url" placeholder="Paste YouTube or TikTok URL here" 
+               value="https://www.tiktok.com/@reaction_lb/video/7553979416359996680">
         <select id="format">
             <option value="mp4">MP4 Video</option>
             <option value="mp3">MP3 Audio</option>
         </select>
-        <button onclick="downloadVideo()" id="downloadBtn">Download</button>
+        <button onclick="downloadVideo()" id="downloadBtn">Test Download</button>
         
         <div id="status" class="info">
-            Testing connection...
+            🔄 Testing API connection...
         </div>
         
-        <div style="margin-top: 20px; padding: 15px; background: #e9ecef; border-radius: 5px;">
-            <strong>Current Status:</strong> 
-            <ul>
-                <li>✅ API Gateway: Working</li>
-                <li>✅ Lambda Function: Working</li>
-                <li>🔄 Video Download: Basic version active</li>
-                <li>📝 This version confirms API connectivity</li>
-            </ul>
+        <div class="api-info">
+            <strong>API Status:</strong> <span id="apiStatus">Checking...</span><br>
+            <strong>Endpoint:</strong> <code id="apiUrl">$ACTUAL_URL</code>
         </div>
         
-        <div class="warning" style="margin-top: 15px; padding: 15px; border-radius: 5px;">
-            <strong>Note:</strong> This is a basic test version. The API receives your request but actual video downloading requires additional yt-dlp setup in Lambda.
+        <div class="warning" style="margin-top: 20px; padding: 15px; border-radius: 8px;">
+            <strong>⚠️ Note:</strong> This is a test version. The API receives requests but actual video downloading requires additional setup.
         </div>
     </div>
 
     <script>
-        const API_URL = "$INVOKE_URL";
+        const API_URL = "$ACTUAL_URL";
+        console.log('Using API URL:', API_URL);
         
         async function downloadVideo() {
             const url = document.getElementById('url').value.trim();
@@ -63,60 +129,73 @@
             }
             
             btn.disabled = true;
-            btn.textContent = 'Processing...';
-            status.innerHTML = '<div class="info">⏳ Processing your download request...</div>';
+            btn.textContent = 'Sending Request...';
+            status.innerHTML = '<div class="info">🔄 Sending request to AWS Lambda...</div>';
             
             try {
+                console.log('Sending POST to:', API_URL + '/start-download');
+                console.log('Data:', {url, format});
+                
                 const response = await fetch(API_URL + '/start-download', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
                     body: JSON.stringify({url, format})
                 });
                 
+                console.log('Response status:', response.status, response.statusText);
+                
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    const errorText = await response.text();
+                    console.error('Error response:', errorText);
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
                 
-                const text = await response.text();
-                let data;
-                try {
-                    data = JSON.parse(text);
-                } catch (e) {
-                    throw new Error(`Invalid JSON response: ${text.substring(0, 100)}`);
-                }
+                const data = await response.json();
+                console.log('Success response:', data);
                 
-                if (data.error) {
-                    status.innerHTML = '<div class="error">❌ Error: ' + data.error + '</div>';
-                } else {
-                    status.innerHTML = '<div class="success">✅ ' + data.message + '<br>Download ID: ' + data.download_id + '</div>';
-                    console.log('Response:', data);
-                }
+                status.innerHTML = '<div class="success">✅ ' + data.message + 
+                                  '<br><small>Download ID: ' + data.download_id + '</small></div>';
+                
             } catch (error) {
-                status.innerHTML = '<div class="error">❌ Error: ' + error.message + '</div>';
-                console.error('Download error:', error);
+                console.error('Fetch error:', error);
+                status.innerHTML = '<div class="error">❌ Connection Error: ' + error.message + 
+                                  '<br><small>Check browser console for details</small></div>';
             } finally {
                 btn.disabled = false;
-                btn.textContent = 'Download';
+                btn.textContent = 'Test Download';
             }
         }
         
         // Test connection on load
         async function testConnection() {
-            const status = document.getElementById('status');
+            const statusEl = document.getElementById('status');
+            const apiStatusEl = document.getElementById('apiStatus');
+            
             try {
+                console.log('Testing connection to:', API_URL + '/health');
                 const response = await fetch(API_URL + '/health');
+                
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    throw new Error(`HTTP ${response.status}`);
                 }
+                
                 const data = await response.json();
-                status.innerHTML = '<div class="success">✅ API is working! You can test the download endpoint.</div>';
-                console.log('API Health:', data);
+                console.log('Health check success:', data);
+                
+                statusEl.innerHTML = '<div class="success">✅ API Connected! Ready to test.</div>';
+                apiStatusEl.innerHTML = '<span style="color: green;">✅ Online</span>';
+                
             } catch (error) {
-                status.innerHTML = '<div class="error">❌ API connection failed: ' + error.message + '</div>';
-                console.error('API test failed:', error);
+                console.error('Health check failed:', error);
+                statusEl.innerHTML = '<div class="error">❌ API Connection Failed: ' + error.message + 
+                                   '<br><small>This may be a CORS issue. Check browser console.</small></div>';
+                apiStatusEl.innerHTML = '<span style="color: red;">❌ Offline - ' + error.message + '</span>';
             }
         }
         
+        // Initialize
         testConnection();
     </script>
 </body>
