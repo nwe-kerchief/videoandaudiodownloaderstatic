@@ -3,7 +3,7 @@ services:
     name: video-downloader-web
     env: static
     buildCommand: ""
-    staticPublishPath: ./public
+    staticPublishPath: ./template
     headers:
       - path: /*
         name: Cache-Control
