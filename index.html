@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Downloader - YouTube & TikTok</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        input[type="url"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="url"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .radio-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .radio-option {
+            flex: 1;
+        }
+        
+        .radio-option input {
+            display: none;
+        }
+        
+        .radio-option label {
+            display: block;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .radio-option input:checked + label {
+            border-color: #667eea;
+            background: #f0f4ff;
+            color: #667eea;
+        }
+        
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .download-link {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 12px 24px;
+            background: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+        
+        .download-link:hover {
+            background: #218838;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .info {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .info h3 {
+            color: #0066cc;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .info ul {
+            padding-left: 20px;
+        }
+        
+        .info li {
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        .file-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .success h3, .error h3 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e1e5e9;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 Video Downloader</h1>
+        <p class="subtitle">Download YouTube and TikTok videos up to 200MB</p>
+        
+        <div class="info">
+            <h3>📋 Supported Platforms & Features</h3>
+            <ul>
+                <li>YouTube (Videos, Shorts, Music)</li>
+                <li>TikTok (All videos)</li>
+                <li>MP3 (Audio only) and MP4 (Video) formats</li>
+                <li>Max file size: 200MB for web downloads</li>
+                <li>Files automatically deleted after 24 hours</li>
+            </ul>
+        </div>
+        
+        <form id="downloadForm">
+            <div class="form-group">
+                <label for="url">📺 Video URL:</label>
+                <input type="url" id="url" name="url" 
+                       placeholder="https://www.youtube.com/watch?v=... or https://www.tiktok.com/..." 
+                       required>
+            </div>
+            
+            <div class="form-group">
+                <label>📥 Download Format:</label>
+                <div class="radio-group">
+                    <div class="radio-option">
+                        <input type="radio" id="format-mp4" name="format" value="mp4" checked>
+                        <label for="format-mp4">🎬 MP4 Video</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="format-mp3" name="format" value="mp3">
+                        <label for="format-mp3">🎵 MP3 Audio</label>
+                    </div>
+                </div>
+            </div>
+            
+            <button type="submit" id="downloadBtn">
+                ⬇️ Download Now
+            </button>
+        </form>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Downloading your video... This may take 1-2 minutes</p>
+            <p style="font-size: 14px; color: #666; margin-top: 10px;">
+                Processing video → Converting format → Uploading to cloud
+            </p>
+        </div>
+        
+        <div class="result success" id="successResult">
+            <h3>✅ Download Ready!</h3>
+            <div id="successMessage"></div>
+            <a href="#" id="downloadLink" class="download-link" target="_blank">
+                📥 Download File
+            </a>
+            <div class="file-info" id="fileInfo"></div>
+        </div>
+        
+        <div class="result error" id="errorResult">
+            <h3>❌ Download Failed</h3>
+            <p id="errorMessage"></p>
+        </div>
+
+        <div class="footer">
+            <p>Powered by AWS Lambda & Render | Files are automatically deleted after 24 hours</p>
+        </div>
+    </div>
+
+    <script>
+        // Replace this with your actual Lambda Function URL
+        const API_URL = 'https://zqnftzmzsxc2lwd5tlj72bp4tu0iviop.lambda-url.ap-southeast-2.on.aws/';
+        
+        document.getElementById('downloadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const url = document.getElementById('url').value.trim();
+            const format = document.querySelector('input[name="format"]:checked').value;
+            const downloadBtn = document.getElementById('downloadBtn');
+            const loading = document.getElementById('loading');
+            const successResult = document.getElementById('successResult');
+            const errorResult = document.getElementById('errorResult');
+            const successMessage = document.getElementById('successMessage');
+            const errorMessage = document.getElementById('errorMessage');
+            const downloadLink = document.getElementById('downloadLink');
+            const fileInfo = document.getElementById('fileInfo');
+            
+            // Reset states
+            successResult.style.display = 'none';
+            errorResult.style.display = 'none';
+            downloadBtn.disabled = true;
+            downloadBtn.textContent = 'Processing...';
+            loading.style.display = 'block';
+            
+            try {
+                console.log('Sending request to:', API_URL);
+                console.log('Request data:', { url, format });
+                
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        url: url,
+                        format: format
+                    })
+                });
+                
+                console.log('Response status:', response.status);
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (data.success) {
+                    // Success case
+                    successMessage.innerHTML = `
+                        <strong>${data.title || 'Download'}</strong> is ready!<br>
+                        Format: ${data.format.toUpperCase()} | Platform: ${data.platform}
+                    `;
+                    
+                    fileInfo.innerHTML = `
+                        <strong>File Details:</strong><br>
+                        • Size: ${data.size_mb}MB<br>
+                        • Type: ${data.format.toUpperCase()}<br>
+                        • Platform: ${data.platform}
+                    `;
+                    
+                    downloadLink.href = data.download_url;
+                    successResult.style.display = 'block';
+                    
+                    // Auto-scroll to result
+                    successResult.scrollIntoView({ behavior: 'smooth' });
+                    
+                } else {
+                    // Error case
+                    errorMessage.textContent = data.error || 'Unknown error occurred';
+                    errorResult.style.display = 'block';
+                    errorResult.scrollIntoView({ behavior: 'smooth' });
+                }
+                
+            } catch (error) {
+                console.error('Network error:', error);
+                errorMessage.textContent = 'Network error: ' + error.message;
+                errorResult.style.display = 'block';
+                errorResult.scrollIntoView({ behavior: 'smooth' });
+            } finally {
+                downloadBtn.disabled = false;
+                downloadBtn.textContent = '⬇️ Download Now';
+                loading.style.display = 'none';
+            }
+        });
+
+        // Add input validation
+        document.getElementById('url').addEventListener('input', function(e) {
+            const url = e.target.value.trim();
+            const downloadBtn = document.getElementById('downloadBtn');
+            
+            // Basic URL validation
+            if (url.includes('youtube.com') || url.includes('youtu.be') || url.includes('tiktok.com')) {
+                downloadBtn.disabled = false;
+            } else if (url.length > 0) {
+                downloadBtn.disabled = true;
+            }
+        });
+    </script>
+</body>
+</html>
