@@ -33,7 +33,7 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 800px;
             margin: 0 auto;
             padding: 20px;
         }
@@ -426,69 +426,12 @@
             background: #f9fafb;
         }
 
-        /* Features */
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
-            margin-bottom: 40px;
-        }
-
-        .feature-card {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-
-        .feature-icon {
-            width: 70px;
-            height: 70px;
-            background: rgba(99, 102, 241, 0.1);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-            font-size: 1.8rem;
-            color: var(--primary);
-        }
-
-        .feature-title {
-            font-size: 1.3rem;
-            font-weight: 700;
-            margin-bottom: 12px;
-        }
-
-        .feature-desc {
-            color: var(--gray);
-        }
-
         /* Footer */
         .footer {
             text-align: center;
             color: white;
             padding: 30px 0;
             opacity: 0.8;
-        }
-
-        .footer-links {
-            display: flex;
-            justify-content: center;
-            gap: 25px;
-            margin-bottom: 20px;
-        }
-
-        .footer-link {
-            color: white;
-            text-decoration: none;
-            transition: opacity 0.3s;
-        }
-
-        .footer-link:hover {
-            opacity: 1;
-            text-decoration: underline;
         }
 
         /* Animations */
@@ -529,6 +472,14 @@
                 gap: 15px;
             }
         }
+
+        .filename {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--dark);
+            margin: 10px 0;
+            word-break: break-word;
+        }
     </style>
 </head>
 <body>
@@ -554,31 +505,6 @@
                 </div>
             </div>
         </header>
-
-        <!-- Features -->
-        <div class="features">
-            <div class="feature-card fade-in">
-                <div class="feature-icon">
-                    <i class="fab fa-youtube"></i>
-                </div>
-                <h3 class="feature-title">YouTube Support</h3>
-                <p class="feature-desc">Download videos, shorts, and music from YouTube in multiple formats</p>
-            </div>
-            <div class="feature-card fade-in">
-                <div class="feature-icon">
-                    <i class="fab fa-tiktok"></i>
-                </div>
-                <h3 class="feature-title">TikTok Support</h3>
-                <p class="feature-desc">Download TikTok videos with original quality and sound</p>
-            </div>
-            <div class="feature-card fade-in">
-                <div class="feature-icon">
-                    <i class="fas fa-file-video"></i>
-                </div>
-                <h3 class="feature-title">Multiple Formats</h3>
-                <p class="feature-desc">MP4 video and MP3 audio formats with quality options</p>
-            </div>
-        </div>
 
         <!-- Main Card -->
         <div class="main-card fade-in">
@@ -705,12 +631,6 @@
 
         <!-- Footer -->
         <footer class="footer">
-            <div class="footer-links">
-                <a href="#" class="footer-link">Privacy Policy</a>
-                <a href="#" class="footer-link">Terms of Service</a>
-                <a href="#" class="footer-link">Contact</a>
-                <a href="#" class="footer-link">FAQ</a>
-            </div>
             <p>© 2024 StreamSave Pro. All rights reserved. For personal use only.</p>
             <p>Files are automatically deleted after 24 hours.</p>
         </footer>
@@ -857,15 +777,22 @@
             loading.style.display = 'none';
             successResult.style.display = 'block';
             
-            // Set download link
+            // Set download link with proper filename
             downloadLink.href = data.download_url;
             
-            // Create file preview
+            // Extract actual filename from the URL or use the provided filename
+            let displayFilename = data.filename || 'download.' + data.format;
+            
+            // Remove timestamp prefixes and clean up the filename
+            displayFilename = displayFilename.replace(/^\d+_/, '').replace(/^download_/, '');
+            displayFilename = displayFilename.replace(/_/g, ' ').replace(/\.(mp4|mp3)$/, '');
+            
+            // Create file preview with proper filename
             filePreview.innerHTML = `
                 <div style="text-align: center; padding: 20px;">
                     <i class="fas fa-file-${data.format === 'mp3' ? 'audio' : 'video'}" style="font-size: 3rem; color: #6366f1; margin-bottom: 15px;"></i>
-                    <h3>${data.filename || 'download.' + data.format}</h3>
-                    <p style="color: #6b7280; margin-top: 10px;">${data.format.toUpperCase()} File</p>
+                    <div class="filename">${displayFilename}</div>
+                    <p style="color: #6b7280; margin-top: 5px;">${data.format.toUpperCase()} File</p>
                 </div>
             `;
             
