@@ -105,6 +105,17 @@
         .progress-ring-circle {
             transition: stroke-dashoffset 0.3s;
         }
+
+        .thumbnail-loading {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
     </style>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-purple-600 via-pink-600 to-red-500">
@@ -456,27 +467,6 @@
             }
         }
 
-        // Generate thumbnail URL from video URL (for YouTube)
-        function generateThumbnailUrl(url) {
-            try {
-                const urlObj = new URL(url);
-                if (urlObj.hostname.includes('youtube.com') || urlObj.hostname.includes('youtu.be')) {
-                    let videoId;
-                    if (urlObj.hostname.includes('youtu.be')) {
-                        videoId = urlObj.pathname.slice(1);
-                    } else {
-                        videoId = urlObj.searchParams.get('v');
-                    }
-                    if (videoId) {
-                        return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-                    }
-                }
-            } catch (e) {
-                console.error('Error generating thumbnail:', e);
-            }
-            return null;
-        }
-
         // Start download process
         async function startDownload(url, format) {
             // Reset UI
@@ -541,6 +531,16 @@
             successResult.classList.add('hidden');
             errorResult.classList.add('hidden');
             
+            // Show loading thumbnail
+            thumbnailPreview.innerHTML = `
+                <div class="w-full h-full thumbnail-loading rounded-lg flex items-center justify-center">
+                    <div class="text-center text-gray-500">
+                        <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                        <div class="text-sm">Loading thumbnail...</div>
+                    </div>
+                </div>
+            `;
+            
             // Animate progress steps
             const steps = document.querySelectorAll('.loading-step');
             steps.forEach((step, index) => {
@@ -565,27 +565,9 @@
             const videoTitle = data.title || 'Video Download';
             const displayFilename = data.filename || `download.${data.format}`;
             
-            // Generate and display thumbnail
-            const thumbnailUrl = generateThumbnailUrl(originalUrl);
-            if (thumbnailUrl) {
-                thumbnailPreview.innerHTML = `
-                    <img src="${thumbnailUrl}" alt="${videoTitle}" class="w-full h-full object-cover" onerror="this.style.display='none'">
-                    <div class="thumbnail-overlay">
-                        <div class="text-white text-center">
-                            <i class="fas fa-play text-4xl mb-2"></i>
-                            <div class="font-semibold">Preview Available</div>
-                        </div>
-                    </div>
-                `;
-            } else {
-                thumbnailPreview.innerHTML = `
-                    <div class="text-center text-gray-500">
-                        <i class="fas fa-file-${data.format === 'mp3' ? 'audio' : 'video'} text-6xl mb-4"></i>
-                        <div class="font-semibold">${data.format.toUpperCase()} File</div>
-                        <div class="text-sm mt-2">Thumbnail not available</div>
-                    </div>
-                `;
-            }
+            // Display thumbnail - we'll fetch it from a separate endpoint
+            // For now, show a loading state and try to get thumbnail
+            loadThumbnail(originalUrl, videoTitle, data.format);
             
             // Create file info
             fileInfo.innerHTML = `
@@ -613,6 +595,124 @@
             
             // Scroll to result
             successResult.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // Function to load thumbnail from backend
+        async function loadThumbnail(url, title, format) {
+            try {
+                // First try to get thumbnail from our API
+                const thumbnailResponse = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        url: url,
+                        format: 'thumbnail' // Special format for thumbnail only
+                    })
+                });
+
+                if (thumbnailResponse.ok) {
+                    const thumbnailData = await thumbnailResponse.json();
+                    if (thumbnailData.thumbnail_url) {
+                        // Use the thumbnail from API
+                        displayThumbnail(thumbnailData.thumbnail_url, title);
+                        return;
+                    }
+                }
+            } catch (error) {
+                console.log('Thumbnail API failed, using fallback');
+            }
+
+            // Fallback: Generate YouTube thumbnail URL
+            const fallbackThumbnail = generateYouTubeThumbnail(url);
+            if (fallbackThumbnail) {
+                displayThumbnail(fallbackThumbnail, title, true);
+            } else {
+                // Final fallback: icon
+                displayFallbackThumbnail(title, format);
+            }
+        }
+
+        // Generate YouTube thumbnail URL (fallback)
+        function generateYouTubeThumbnail(url) {
+            try {
+                const urlObj = new URL(url);
+                let videoId;
+                
+                if (urlObj.hostname.includes('youtu.be')) {
+                    videoId = urlObj.pathname.slice(1);
+                } else if (urlObj.hostname.includes('youtube.com')) {
+                    videoId = urlObj.searchParams.get('v');
+                }
+                
+                if (videoId) {
+                    // Try different quality levels
+                    const qualities = [
+                        `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+                        `https://img.youtube.com/vi/${videoId}/sddefault.jpg`,
+                        `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
+                        `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`
+                    ];
+                    return qualities[0]; // Return highest quality first
+                }
+            } catch (e) {
+                console.error('Error generating YouTube thumbnail:', e);
+            }
+            return null;
+        }
+
+        // Display thumbnail
+        function displayThumbnail(thumbnailUrl, title, isFallback = false) {
+            const img = new Image();
+            img.src = thumbnailUrl;
+            img.alt = title;
+            img.className = 'w-full h-full object-cover';
+            
+            img.onload = () => {
+                thumbnailPreview.innerHTML = '';
+                thumbnailPreview.appendChild(img);
+                
+                if (!isFallback) {
+                    // Add overlay for actual thumbnails
+                    const overlay = document.createElement('div');
+                    overlay.className = 'thumbnail-overlay';
+                    overlay.innerHTML = `
+                        <div class="text-white text-center">
+                            <i class="fas fa-play text-4xl mb-2"></i>
+                            <div class="font-semibold">Video Preview</div>
+                        </div>
+                    `;
+                    thumbnailPreview.appendChild(overlay);
+                }
+            };
+            
+            img.onerror = () => {
+                // If thumbnail fails to load, show fallback
+                if (isFallback) {
+                    displayFallbackThumbnail(title, 'mp4');
+                } else {
+                    // Try fallback method
+                    const fallbackThumbnail = generateYouTubeThumbnail(thumbnailUrl);
+                    if (fallbackThumbnail) {
+                        displayThumbnail(fallbackThumbnail, title, true);
+                    } else {
+                        displayFallbackThumbnail(title, 'mp4');
+                    }
+                }
+            };
+        }
+
+        // Display fallback thumbnail with icon
+        function displayFallbackThumbnail(title, format) {
+            thumbnailPreview.innerHTML = `
+                <div class="text-center text-gray-500 p-4">
+                    <i class="fas fa-file-${format === 'mp3' ? 'audio' : 'video'} text-6xl mb-4"></i>
+                    <div class="font-semibold text-lg">${title}</div>
+                    <div class="text-sm mt-2 text-gray-400">${format.toUpperCase()} File</div>
+                    <div class="text-xs mt-1 text-gray-400">Thumbnail not available</div>
+                </div>
+            `;
         }
 
         function showError(message) {
