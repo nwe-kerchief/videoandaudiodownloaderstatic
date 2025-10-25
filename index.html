@@ -473,11 +473,19 @@
             }
         }
 
-        .filename {
-            font-size: 1.1rem;
-            font-weight: 600;
+        .video-title {
+            font-size: 1.3rem;
+            font-weight: 700;
             color: var(--dark);
-            margin: 10px 0;
+            margin: 15px 0;
+            word-break: break-word;
+            line-height: 1.4;
+        }
+
+        .filename {
+            font-size: 1rem;
+            color: var(--gray);
+            margin: 5px 0;
             word-break: break-word;
         }
     </style>
@@ -589,7 +597,7 @@
                     
                     <div class="result-content">
                         <div class="file-preview">
-                            <h4>File Preview</h4>
+                            <h4>Video Preview</h4>
                             <div id="filePreview"></div>
                         </div>
                         <div class="file-info">
@@ -599,7 +607,7 @@
                     </div>
                     
                     <div class="download-actions">
-                        <a href="#" class="btn btn-primary" id="downloadLink" target="_blank">
+                        <a href="#" class="btn btn-primary" id="downloadLink" target="_blank" download>
                             <i class="fas fa-download"></i> Download File
                         </a>
                         <button class="btn btn-secondary" id="newDownloadBtn">
@@ -780,19 +788,17 @@
             // Set download link with proper filename
             downloadLink.href = data.download_url;
             
-            // Extract actual filename from the URL or use the provided filename
-            let displayFilename = data.filename || 'download.' + data.format;
+            // Use the actual video title from API or fallback
+            const videoTitle = data.title || 'Video Download';
+            const displayFilename = data.filename || `download.${data.format}`;
             
-            // Remove timestamp prefixes and clean up the filename
-            displayFilename = displayFilename.replace(/^\d+_/, '').replace(/^download_/, '');
-            displayFilename = displayFilename.replace(/_/g, ' ').replace(/\.(mp4|mp3)$/, '');
-            
-            // Create file preview with proper filename
+            // Create file preview with actual YouTube title
             filePreview.innerHTML = `
-                <div style="text-align: center; padding: 20px;">
-                    <i class="fas fa-file-${data.format === 'mp3' ? 'audio' : 'video'}" style="font-size: 3rem; color: #6366f1; margin-bottom: 15px;"></i>
-                    <div class="filename">${displayFilename}</div>
-                    <p style="color: #6b7280; margin-top: 5px;">${data.format.toUpperCase()} File</p>
+                <div style="text-align: center; padding: 15px;">
+                    <i class="fas fa-file-${data.format === 'mp3' ? 'audio' : 'video'}" style="font-size: 2.5rem; color: #6366f1; margin-bottom: 15px;"></i>
+                    <div class="video-title">${videoTitle}</div>
+                    <div class="filename">${displayFilename}.${data.format}</div>
+                    <p style="color: #6b7280; margin-top: 10px;">${data.format.toUpperCase()} • ${data.platform || 'Unknown Platform'}</p>
                 </div>
             `;
             
@@ -815,6 +821,10 @@
                     <span class="info-value">${data.format === 'mp3' ? '128kbps' : 'HD'}</span>
                 </div>
             `;
+            
+            // Set download attribute with proper filename
+            const cleanTitle = videoTitle.replace(/[<>:"/\\|?*]/g, '').substring(0, 100);
+            downloadLink.setAttribute('download', `${cleanTitle}.${data.format}`);
             
             // Scroll to result
             successResult.scrollIntoView({ behavior: 'smooth' });
