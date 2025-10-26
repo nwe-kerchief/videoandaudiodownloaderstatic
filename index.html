@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -554,15 +555,18 @@ function showLoading() {
         }, index * 1000);
     });
 }
+
 function showSuccess(data, originalUrl) {
     loading.classList.add('hidden');
     successResult.classList.remove('hidden');
+    
+    
     
     // Use the actual video title from API or fallback
     const videoTitle = data.title || 'Video Download';
     const displayFilename = data.filename || `download.${data.format}`;
     
-    // Generate and display thumbnail
+    // Generate and display thumbnail (simple approach from second file)
     const thumbnailUrl = generateYouTubeThumbnail(originalUrl);
     if (thumbnailUrl) {
         thumbnailPreview.innerHTML = `
@@ -605,74 +609,25 @@ function showSuccess(data, originalUrl) {
         </div>
     `;
     
-    // Clean filename for download
-    const cleanTitle = videoTitle.replace(/[<>:"/\\|?*]/g, '').replace(/\s+/g, '_').substring(0, 100);
-    const downloadFileName = `${cleanTitle}.${data.format}`;
+    // Set download attribute with proper filename
+    const cleanTitle = videoTitle.replace(/[<>:"/\\|?*]/g, '').substring(0, 100);
+    // In showSuccess function, replace the download link setup with:
+    downloadLink.href = data.download_url;
+    downloadLink.setAttribute('download', `${cleanTitle}.${data.format}`);
+    // Remove target attribute completely to open in same tab
+    downloadLink.removeAttribute('target');
     
-    // IMPORTANT FIX: Use programmatic download instead of direct link
-    downloadLink.href = "#";
-    downloadLink.onclick = function(e) {
-        e.preventDefault();
-        forceDownload(data.download_url, downloadFileName);
-        return false;
-    };
+    // Add click handler to track download
+    downloadLink.addEventListener('click', function() {
+        // You can add analytics or tracking here
+        console.log('Download started:', data.title);
+    });
     
-    // Update button text
+    // Update button text to be clearer
     downloadLink.innerHTML = '<i class="fas fa-download"></i> Download File Now';
     
     // Scroll to result
     successResult.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-// NEW FUNCTION: Force download using fetch API
-async function forceDownload(url, filename) {
-    try {
-        // Show downloading indicator
-        const originalText = downloadLink.innerHTML;
-        downloadLink.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Downloading...';
-        downloadLink.disabled = true;
-        
-        // Fetch the file
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        // Convert to blob
-        const blob = await response.blob();
-        const blobUrl = window.URL.createObjectURL(blob);
-        
-        // Create temporary link for download
-        const link = document.createElement('a');
-        link.href = blobUrl;
-        link.download = filename;
-        link.style.display = 'none';
-        
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        // Clean up
-        window.URL.revokeObjectURL(blobUrl);
-        
-        // Restore button
-        downloadLink.innerHTML = '<i class="fas fa-check"></i> Download Complete!';
-        setTimeout(() => {
-            downloadLink.innerHTML = originalText;
-            downloadLink.disabled = false;
-        }, 2000);
-        
-    } catch (error) {
-        console.error('Download failed:', error);
-        downloadLink.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Download Failed';
-        setTimeout(() => {
-            downloadLink.innerHTML = '<i class="fas fa-download"></i> Try Again';
-            downloadLink.disabled = false;
-        }, 2000);
-        
-        // Fallback: Open in new tab if fetch fails
-        window.open(url, '_blank');
-    }
 }
 
 // Generate simple YouTube thumbnail URL (from second file)
