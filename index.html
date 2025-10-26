@@ -140,18 +140,21 @@
                 padding-top: 1rem;
                 padding-bottom: 1rem;
             }
+
+            .history-item-buttons {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .history-item-content {
+                min-width: 0;
+                flex: 1;
+            }
         }
 
         /* History panel styles */
         .history-panel {
             transition: all 0.3s ease;
-            max-height: 0;
-            overflow: hidden;
-        }
-        
-        .history-panel.open {
-            max-height: 500px;
-            margin-bottom: 1rem;
         }
 
         .history-item {
@@ -197,10 +200,26 @@
             opacity: 0;
         }
 
+        .main-header.hidden {
+            opacity: 0;
+            height: 0;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
         /* Compact stats */
         .compact-stats {
             font-size: 0.75rem;
             padding: 0.25rem 0.75rem;
+        }
+
+        /* Text truncate */
+        .truncate-2-lines {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
     </style>
 </head>
@@ -237,8 +256,15 @@
         </div>
     </div>
 
+    <!-- Top Marquee -->
+    <div class="bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 text-white py-3 px-6 border-b border-purple-400 neon-glow">
+        <marquee class="text-sm md:text-base font-semibold">
+            ✨ This website was created by <b class="text-yellow-300">Aung Myo Myat Zaw</b> ✨
+        </marquee>
+    </div>
+
     <!-- Sticky Header (Hidden on scroll) -->
-    <div id="stickyHeader" class="sticky-header bg-gradient-to-r from-purple-600/90 to-pink-600/90 border-b border-white/20">
+    <div id="stickyHeader" class="sticky-header hidden bg-gradient-to-r from-purple-600/90 to-pink-600/90 border-b border-white/20">
         <div class="container mx-auto px-4 py-3">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
@@ -264,7 +290,7 @@
 
     <div class="container mx-auto px-4 py-6 max-w-4xl mobile-padding">
         <!-- Main Header (Visible initially) -->
-        <header id="mainHeader" class="text-center mb-8 slide-in mobile-text-center mobile-compact">
+        <header id="mainHeader" class="text-center mb-8 slide-in mobile-text-center">
             <div class="flex flex-col items-center justify-center gap-4 mb-6">
                 <div class="glass-effect p-4 rounded-2xl">
                     <i class="fas fa-cloud-download-alt text-4xl text-white"></i>
@@ -276,6 +302,22 @@
             <p class="text-xl text-white/90 mb-6 font-medium">
                 Download High Quality Videos & Audio from Multiple Platforms
             </p>
+            
+            <!-- Stats -->
+            <div class="flex flex-wrap justify-center gap-4 mb-6">
+                <div class="glass-effect px-6 py-3 rounded-xl text-white font-semibold flex items-center gap-2">
+                    <i class="fas fa-bolt text-yellow-400"></i>
+                    <span>Lightning Fast</span>
+                </div>
+                <div class="glass-effect px-6 py-3 rounded-xl text-white font-semibold flex items-center gap-2">
+                    <i class="fas fa-shield-alt text-green-400"></i>
+                    <span>100% Secure</span>
+                </div>
+                <div class="glass-effect px-6 py-3 rounded-xl text-white font-semibold flex items-center gap-2">
+                    <i class="fas fa-infinity text-blue-400"></i>
+                    <span>Unlimited Downloads</span>
+                </div>
+            </div>
         </header>
 
         <!-- Main Download Card -->
@@ -485,7 +527,7 @@
                     <i class="fas fa-history"></i>
                     Recent Downloads
                     <span id="historyCount" class="bg-white/20 text-white/90 text-sm px-2 py-1 rounded-full">
-                        ${downloadHistory.length}
+                        0
                     </span>
                 </h2>
             </div>
@@ -508,6 +550,17 @@
                         Clear All History
                     </button>
                 </div>
+            </div>
+        </div>
+
+        <!-- Footer Marquee -->
+        <div class="mt-6">
+            <div class="bg-gradient-to-r from-green-600 via-teal-600 to-blue-600 text-white py-3 px-6 rounded-2xl shadow-xl border border-green-400 neon-glow">
+                <marquee class="text-sm md:text-base font-semibold">
+                    🔒 Secure & Private • All Rights Reserved by
+                    <b class="text-yellow-300 transition-all duration-200">AMMZ</b> 
+                    • Built with Advanced AI Technology 🚀
+                </marquee>
             </div>
         </div>
 
@@ -560,14 +613,12 @@ let ticking = false;
 function updateHeaderVisibility() {
     const scrollY = window.scrollY;
     
-    if (scrollY > 100) {
+    if (scrollY > 200) { // Increased threshold for better UX
         stickyHeader.classList.remove('hidden');
-        mainHeader.style.opacity = '0.3';
-        mainHeader.style.transform = 'scale(0.95)';
+        mainHeader.classList.add('hidden');
     } else {
         stickyHeader.classList.add('hidden');
-        mainHeader.style.opacity = '1';
-        mainHeader.style.transform = 'scale(1)';
+        mainHeader.classList.remove('hidden');
     }
     
     lastScrollY = scrollY;
@@ -617,34 +668,36 @@ function renderHistory() {
     clearHistorySection.classList.remove('hidden');
     
     historyList.innerHTML = downloadHistory.map(item => `
-        <div class="history-item bg-gray-50 rounded-xl p-4 flex items-center justify-between border border-gray-100">
-            <div class="flex items-center space-x-4 flex-1 min-w-0">
-                <div class="w-12 h-12 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white flex-shrink-0">
-                    <i class="fas fa-${item.format === 'mp3' ? 'music' : 'film'}"></i>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <div class="text-gray-800 font-semibold truncate text-sm">${item.title}</div>
-                    <div class="text-gray-500 text-xs flex items-center space-x-2 mt-1">
-                        <span class="bg-${getPlatformColor(item.platform)}-100 text-${getPlatformColor(item.platform)}-600 px-2 py-1 rounded-full capitalize">${item.platform}</span>
-                        <span>•</span>
-                        <span>${item.format.toUpperCase()}</span>
-                        <span>•</span>
-                        <span>${item.size_mb}MB</span>
+        <div class="history-item bg-gray-50 rounded-xl p-4 border border-gray-100">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="history-item-content flex items-center space-x-4 flex-1 min-w-0">
+                    <div class="w-12 h-12 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white flex-shrink-0">
+                        <i class="fas fa-${item.format === 'mp3' ? 'music' : 'film'}"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="text-gray-800 font-semibold text-sm truncate-2-lines">${item.title}</div>
+                        <div class="text-gray-500 text-xs flex items-center space-x-2 mt-1 flex-wrap">
+                            <span class="bg-${getPlatformColor(item.platform)}-100 text-${getPlatformColor(item.platform)}-600 px-2 py-1 rounded-full capitalize">${item.platform}</span>
+                            <span>•</span>
+                            <span>${item.format.toUpperCase()}</span>
+                            <span>•</span>
+                            <span>${item.size_mb}MB</span>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="flex space-x-2 ml-4 flex-shrink-0">
-                <button onclick="redownloadItem('${item.download_url}', '${item.title}', '${item.format}')" 
-                        class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-semibold rounded-lg transition-all duration-300 flex items-center gap-2"
-                        title="Download Again">
-                    <i class="fas fa-download"></i>
-                    Download
-                </button>
-                <button onclick="removeFromHistory('${item.id}')" 
-                        class="w-8 h-8 bg-red-500/10 hover:bg-red-500/20 rounded-lg flex items-center justify-center text-red-500 transition-colors"
-                        title="Remove from History">
-                    <i class="fas fa-times"></i>
-                </button>
+                <div class="history-item-buttons flex gap-2 flex-shrink-0">
+                    <button onclick="redownloadItem('${item.download_url}', '${item.title}', '${item.format}')" 
+                            class="px-3 py-2 bg-green-500 hover:bg-green-600 text-white text-xs font-semibold rounded-lg transition-all duration-300 flex items-center gap-1"
+                            title="Download Again">
+                        <i class="fas fa-download text-xs"></i>
+                        <span class="hidden sm:inline">Download</span>
+                    </button>
+                    <button onclick="removeFromHistory('${item.id}')" 
+                            class="w-8 h-8 bg-red-500/10 hover:bg-red-500/20 rounded-lg flex items-center justify-center text-red-500 transition-colors"
+                            title="Remove from History">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
             </div>
         </div>
     `).join('');
