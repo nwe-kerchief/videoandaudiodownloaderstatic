@@ -559,8 +559,7 @@ function showSuccess(data, originalUrl) {
     loading.classList.add('hidden');
     successResult.classList.remove('hidden');
     
-    // Set download link
-    downloadLink.href = data.download_url;
+    
     
     // Use the actual video title from API or fallback
     const videoTitle = data.title || 'Video Download';
@@ -611,7 +610,20 @@ function showSuccess(data, originalUrl) {
     
     // Set download attribute with proper filename
     const cleanTitle = videoTitle.replace(/[<>:"/\\|?*]/g, '').substring(0, 100);
+    // Set download link
+    downloadLink.href = data.download_url;
     downloadLink.setAttribute('download', `${cleanTitle}.${data.format}`);
+    downloadLink.setAttribute('target', '_blank');
+
+        // Remove any existing click handlers and add direct download
+    downloadLink.onclick = function(e) {
+        // Let the browser handle the download naturally
+        // The download attribute should force download instead of playing
+        return true;
+    };
+    
+    // Update button text to be clearer
+    downloadLink.innerHTML = '<i class="fas fa-download"></i> Download File Now';
     
     // Scroll to result
     successResult.scrollIntoView({ behavior: 'smooth', block: 'start' });
