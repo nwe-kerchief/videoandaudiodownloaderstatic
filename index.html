@@ -138,27 +138,33 @@
             visibility: visible;
         }
 
-        /* Sticky header */
+        /* OPTIMIZED STICKY HEADER - Simple CSS-only approach */
         .sticky-header {
             position: sticky;
             top: 0;
             z-index: 50;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-        }
-
-        .sticky-header.hidden {
             transform: translateY(-100%);
             opacity: 0;
+            transition: transform 0.2s ease-out, opacity 0.2s ease-out;
+            will-change: transform, opacity;
         }
 
-        .main-header.hidden {
-            opacity: 0;
-            height: 0;
+        .sticky-header.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .main-header {
+            transition: opacity 0.2s ease-out, max-height 0.3s ease-out;
+            max-height: 1000px;
             overflow: hidden;
-            margin: 0;
-            padding: 0;
-            transition: all 0.3s ease;
+        }
+
+        .main-header.hide {
+            opacity: 0;
+            max-height: 0;
+            margin: 0 !important;
+            padding: 0 !important;
         }
 
         /* Compact stats */
@@ -364,8 +370,8 @@
         </marquee>
     </div>
 
-    <!-- Sticky Header (Hidden on scroll) -->
-    <div id="stickyHeader" class="sticky-header hidden bg-gradient-to-r from-purple-600/90 to-pink-600/90 border-b border-white/20">
+    <!-- Sticky Header (Shows on scroll) -->
+    <div id="stickyHeader" class="sticky-header bg-gradient-to-r from-purple-600/95 to-pink-600/95 border-b border-white/20 backdrop-blur-md">
         <div class="container mx-auto px-4 py-3">
             <div class="flex items-center justify-between flex-wrap gap-2">
                 <div class="flex items-center space-x-3">
@@ -391,7 +397,7 @@
 
     <div class="container mx-auto px-4 py-6 max-w-4xl">
         <!-- Main Header (Visible initially) -->
-        <header id="mainHeader" class="text-center mb-8 slide-in">
+        <header id="mainHeader" class="main-header text-center mb-8 slide-in">
             <div class="flex flex-col items-center justify-center gap-4 mb-6">
                 <div class="glass-effect p-4 rounded-2xl">
                     <i class="fas fa-cloud-download-alt text-4xl text-white"></i>
@@ -672,6 +678,54 @@
         </footer>
     </div>
 
+    <!-- OPTIMIZED HEADER SWITCHING SCRIPT (SEPARATE FROM YOUR DOWNLOAD FUNCTIONS) -->
+    <script>
+    (function() {
+        'use strict';
+        
+        const stickyHeader = document.getElementById('stickyHeader');
+        const mainHeader = document.getElementById('mainHeader');
+        const SCROLL_THRESHOLD = 150;
+        let lastScrollY = 0;
+        let ticking = false;
+
+        function updateHeaders() {
+            const currentScrollY = window.pageYOffset || document.documentElement.scrollTop;
+            
+            if (currentScrollY > SCROLL_THRESHOLD) {
+                // Show sticky, hide main
+                if (!stickyHeader.classList.contains('show')) {
+                    stickyHeader.classList.add('show');
+                    mainHeader.classList.add('hide');
+                }
+            } else {
+                // Hide sticky, show main
+                if (stickyHeader.classList.contains('show')) {
+                    stickyHeader.classList.remove('show');
+                    mainHeader.classList.remove('hide');
+                }
+            }
+            
+            lastScrollY = currentScrollY;
+            ticking = false;
+        }
+
+        function requestTick() {
+            if (!ticking) {
+                requestAnimationFrame(updateHeaders);
+                ticking = true;
+            }
+        }
+
+        // Passive listener for better performance
+        window.addEventListener('scroll', requestTick, { passive: true });
+        
+        // Initial check
+        updateHeaders();
+    })();
+    </script>
+
+    <!-- YOUR ORIGINAL DOWNLOAD SCRIPT (UNTOUCHED) -->
     <script>
        // Configuration
 const API_URL = 'https://zqnftzmzsxc2lwd5tlj72bp4tu0iviop.lambda-url.ap-southeast-2.on.aws/';
@@ -694,8 +748,6 @@ const historyList = document.getElementById('historyList');
 const clearHistoryBtn = document.getElementById('clearHistoryBtn');
 const clearHistorySection = document.getElementById('clearHistorySection');
 const historyCount = document.getElementById('historyCount');
-const stickyHeader = document.getElementById('stickyHeader');
-const mainHeader = document.getElementById('mainHeader');
 
 // Progress ring
 const progressRing = document.querySelector('.progress-ring-circle');
@@ -707,34 +759,6 @@ progressRing.style.strokeDashoffset = circumference;
 
 // Download History Management
 let downloadHistory = JSON.parse(localStorage.getItem('downloadHistory')) || [];
-
-// Scroll handling for sticky header
-let lastScrollY = window.scrollY;
-let ticking = false;
-
-function updateHeaderVisibility() {
-    const scrollY = window.scrollY;
-    
-    if (scrollY > 200) { // Increased threshold for better UX
-        stickyHeader.classList.remove('hidden');
-        mainHeader.classList.add('hidden');
-    } else {
-        stickyHeader.classList.add('hidden');
-        mainHeader.classList.remove('hidden');
-    }
-    
-    lastScrollY = scrollY;
-    ticking = false;
-}
-
-function onScroll() {
-    if (!ticking) {
-        requestAnimationFrame(updateHeaderVisibility);
-        ticking = true;
-    }
-}
-
-window.addEventListener('scroll', onScroll);
 
 // Helper function to set progress
 function setProgress(percent) {
