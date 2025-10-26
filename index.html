@@ -611,17 +611,17 @@ function showSuccess(data, originalUrl) {
     
     // Set download attribute with proper filename
     const cleanTitle = videoTitle.replace(/[<>:"/\\|?*]/g, '').substring(0, 100);
-    // In showSuccess function, replace the download link setup with:
+    // Set download link
     downloadLink.href = data.download_url;
     downloadLink.setAttribute('download', `${cleanTitle}.${data.format}`);
-    // Remove target attribute completely to open in same tab
-    downloadLink.removeAttribute('target');
-    
-    // Add click handler to track download
-    downloadLink.addEventListener('click', function() {
-        // You can add analytics or tracking here
-        console.log('Download started:', data.title);
-    });
+    downloadLink.setAttribute('target', '_blank');
+
+        // Remove any existing click handlers and add direct download
+    downloadLink.onclick = function(e) {
+        // Let the browser handle the download naturally
+        // The download attribute should force download instead of playing
+        return true;
+    };
     
     // Update button text to be clearer
     downloadLink.innerHTML = '<i class="fas fa-download"></i> Download File Now';
