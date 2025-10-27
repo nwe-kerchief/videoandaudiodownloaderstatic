@@ -8,7 +8,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FB&YT Downloader By AMMZ - Professional Video Downloader</title>
-
+    <script>
+    window.API_URL = "{{API_URL}}";
+  </script>
   <style>
     :root{
       --primary:#8b5cf6;
@@ -413,7 +415,16 @@
   <!-- Your existing downloader logic (unchanged) -->
   <script>
   // Configuration
-const API_URL = window.API_URL;
+    // Get API_URL injected by server
+    const API_URL = window.API_URL;
+    
+    // Validate
+    if (!API_URL || API_URL === '{{API_URL}}') {
+      console.error('❌ API_URL not configured');
+      alert('Configuration error. Please set API_URL in Render environment.');
+    } else {
+      console.log('✅ API URL:', API_URL);
+    }
 
 // Add debug to see what's happening
 console.log('API_URL:', API_URL);
