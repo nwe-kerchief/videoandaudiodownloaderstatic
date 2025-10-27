@@ -413,7 +413,7 @@
   <!-- Your existing downloader logic (unchanged) -->
   <script>
   // Configuration
-const API_URL = window.API_URL;
+const API_URL = process.env.API_URL;
 // DOM Elements
 const downloadForm = document.getElementById('downloadForm');
 const urlInput = document.getElementById('urlInput');
