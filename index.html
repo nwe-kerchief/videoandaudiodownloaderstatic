@@ -1,425 +1,735 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📧</text></svg>">
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FB&YT Downloader By AMMZ - Professional Video Downloader</title>
-    <script>
-    window.API_URL = "{{API_URL}}";
-  </script>
-  <style>
-    :root{
-      --primary:#8b5cf6;
-      --primary-dark:#7c3aed;
-      --secondary:#06d6a0;
-      --accent:#f59e0b;
-      --dark:#1e293b;
-      --light:#f8fafc;
-      --gray:#64748b;
-      --error:#ef4444;
-      --success:#10b981;
-      --sticky-height:clamp(52px,7.5vw,72px);
-    }
-
-    *{box-sizing:border-box;margin:0;padding:0}
-
-    body{
-      font-family:'Inter',-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-      min-height:100vh;
-      background:linear-gradient(135deg,#7c3aed 0%,#ec4899 50%,#ef4444 100%);
-      color:var(--dark);
-      line-height:1.6;
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
-      overflow-x:hidden;
-    }
-
-    /* Utility skins */
-    .glass-effect{background:rgba(255,255,255,.1);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.18)}
-    .neon-glow{box-shadow:0 0 24px rgba(139,92,246,.28)}
-    .slide-in{animation:slideIn .5s ease-out}
-    @keyframes slideIn{from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1}}
-    .truncate-2-lines{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
-    .aspect-video{aspect-ratio:16/9}
-
-    /* Format cards - HORIZONTAL ON ALL SCREENS */
-    .format-label{cursor:pointer}
-    input[type="radio"].hidden + .format-label{border:2px solid #e5e7eb;border-radius:14px}
-    input[type="radio"].hidden:checked + .format-label{border-color:#a78bfa;background:#f5f3ff}
-
-    /* FIXED: Sticky header appears at 30px scroll */
-    .sticky-header{
-      position:sticky;top:0;z-index:50;
-      height:0;opacity:0;overflow:hidden;padding-block:0;
-      transition:height .22s ease,opacity .18s ease,padding .22s ease;
-      will-change:height,opacity;
-      background:linear-gradient(90deg,rgba(124,58,237,.96),rgba(236,72,153,.96));
-      border-bottom:1px solid rgba(255,255,255,.2);
-      backdrop-filter:blur(10px);
-    }
-    .sticky-header.is-visible{height:var(--sticky-height);opacity:1;padding-block:6px}
-
-    /* Main header compacts but stays visible (never fullscreen) */
-    .main-header{
-      transition:padding .22s ease,margin .22s ease,opacity .18s ease;
-      padding-block:16px;margin-bottom:14px;opacity:1;
-    }
-    .main-header.is-compact{padding-block:10px;margin-bottom:10px;opacity:.97}
-
-    /* FIXED: Creator badge with HOVER tooltip (no click needed) */
-    .creator-badge{
-      position:fixed;right:18px;bottom:18px;z-index:60;
-    }
-    .creator-badge:hover .creator-tooltip{
-      opacity:1;visibility:visible;transform:translateY(0);
-    }
-    .creator-tooltip{
-      position:absolute;bottom:calc(100% + 12px);right:0;
-      opacity:0;visibility:hidden;pointer-events:none;
-      transition:all .25s ease;transform:translateY(8px);
-      background:white;border-radius:16px;padding:1rem;
-      box-shadow:0 20px 25px -5px rgba(0,0,0,0.1),0 10px 10px -5px rgba(0,0,0,0.04);
-      width:280px;
-    }
-
-    /* Loading shimmer */
-    .thumbnail-loading{
-      background:linear-gradient(90deg,#f3f4f6 25%,#e5e7eb 50%,#f3f4f6 75%);
-      background-size:200% 100%;animation:loading 1.3s infinite;
-    }
-    @keyframes loading{0%{background-position:200% 0}100%{background-position:-200% 0}}
-
-    /* Progress circle */
-    .progress-ring{transform:rotate(-90deg)}
-    .progress-ring-circle{transition:stroke-dashoffset .3s}
-
-    /* Mobile tuning */
-    @media(max-width:640px){
-      .main-header{padding-block:12px;margin-bottom:12px}
-      .sticky-header.is-visible{padding-block:4px}
-      .main-header h1{font-size:1.75rem !important}
-      .main-header p{font-size:.95rem !important}
-      
-      /* Creator tooltip on mobile */
-      .creator-tooltip{
-        width:260px !important;
-        bottom:calc(100% + 8px);
-        right:0;
-      }
-    }
-  </style>
-</head>
-
-<body>
-  <!-- FIXED: Creator badge with HOVER tooltip (no click needed) -->
-  <div class="creator-badge">
-    <div class="relative">
-      <button class="w-12 h-12 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full text-white shadow-2xl grid place-items-center hover:from-purple-700 hover:to-pink-700 transition-transform duration-200 hover:scale-110">
-        <i class="fas fa-user"></i>
-      </button>
-      
-      <!-- Tooltip appears on hover -->
-      <div class="creator-tooltip">
-        <div class="text-center">
-          <div class="w-16 h-16 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-3">A</div>
-          <h3 class="font-bold text-gray-800 text-lg">Aung Myo Myat Zaw</h3>
-          <p class="text-gray-600 text-sm mt-1">Full Stack Developer</p>
-          <div class="flex justify-center space-x-3 mt-3">
-            <a href="#" class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 hover:bg-purple-100 hover:text-purple-600 transition-colors">
-              <i class="fab fa-github"></i>
-            </a>
-            <a href="#" class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 hover:bg-blue-100 hover:text-blue-600 transition-colors">
-              <i class="fab fa-linkedin"></i>
-            </a>
-            <a href="#" class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 hover:bg-pink-100 hover:text-pink-600 transition-colors">
-              <i class="fab fa-instagram"></i>
-            </a>
-          </div>
-          <a href="#" class="block w-full mt-3 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold text-sm hover:from-purple-700 hover:to-pink-700 transition-all text-center">
-            View Portfolio
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Top marquee -->
-  <div class="bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 text-white py-2.5 px-4 md:px-6 border-b border-white/20">
-    <marquee class="text-sm md:text-base font-semibold">
-      ✨ This website was created by <b class="text-yellow-300">Aung Myo Myat Zaw</b> ✨
-    </marquee>
-  </div>
-
-  <!-- Sticky header -->
-  <div id="stickyHeader" class="sticky-header">
-    <div class="container mx-auto px-4 h-full">
-      <div class="h-full flex items-center justify-between gap-2">
-        <div class="flex items-center gap-3">
-          <div class="w-8 h-8 bg-white/20 rounded-lg grid place-items-center">
-            <i class="fas fa-cloud-download-alt text-white"></i>
-          </div>
-          <h1 class="text-white font-bold text-base md:text-lg">FB&YT Downloader</h1>
-        </div>
-        <div class="flex items-center gap-2 text-white/90">
-          <div class="glass-effect rounded-lg px-3 py-1 text-xs md:text-sm"><i class="fas fa-bolt text-yellow-300 mr-1"></i>Fast</div>
-          <div class="glass-effect rounded-lg px-3 py-1 text-xs md:text-sm"><i class="fas fa-shield-alt text-emerald-300 mr-1"></i>Secure</div>
-          <div class="glass-effect rounded-lg px-3 py-1 text-xs md:text-sm"><i class="fas fa-infinity text-blue-300 mr-1"></i>Free</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="container mx-auto px-4 py-4 md:py-6 max-w-4xl">
-    <!-- Main header -->
-    <header id="mainHeader" class="main-header text-center slide-in">
-      <div class="flex flex-col items-center justify-center gap-3 mb-4">
-        <div class="glass-effect p-3 md:p-4 rounded-2xl">
-          <i class="fas fa-cloud-download-alt text-3xl md:text-4xl text-white"></i>
-        </div>
-        <h1 class="text-3xl md:text-4xl lg:text-5xl font-black text-white neon-glow">FB&YT Downloader</h1>
-      </div>
-      <p class="text-base md:text-xl text-white/90 mb-4 md:mb-6 font-medium px-4">
-        Download High Quality Videos & Audio from Multiple Platforms
-      </p>
-
-      <div class="flex flex-wrap justify-center gap-2 md:gap-4 mb-4 md:mb-6 px-4">
-        <div class="glass-effect px-3 md:px-6 py-2 md:py-3 rounded-xl text-white font-semibold flex items-center gap-2">
-          <i class="fas fa-bolt text-yellow-300 text-sm"></i><span class="text-xs md:text-base">Lightning Fast</span>
-        </div>
-        <div class="glass-effect px-3 md:px-6 py-2 md:py-3 rounded-xl text-white font-semibold flex items-center gap-2">
-          <i class="fas fa-shield-alt text-emerald-300 text-sm"></i><span class="text-xs md:text-base">100% Secure</span>
-        </div>
-        <div class="glass-effect px-3 md:px-6 py-2 md:py-3 rounded-xl text-white font-semibold flex items-center gap-2">
-          <i class="fas fa-infinity text-blue-300 text-sm"></i><span class="text-xs md:text-base">Unlimited Downloads</span>
-        </div>
-      </div>
-    </header>
-
-    <!-- Sentinel for intersection (drives header switch) -->
-    <div id="headerSentinel" aria-hidden="true"></div>
-
-    <!-- Download Card -->
-    <div class="bg-white rounded-3xl shadow-2xl overflow-hidden mb-8">
-      <div class="bg-gradient-to-r from-gray-900 to-gray-800 text-white py-4 md:py-6 px-4 md:px-8">
-        <h2 class="text-xl md:text-2xl font-bold flex items-center justify-center md:justify-start gap-3">
-          <i class="fas fa-download"></i> Download Content
-        </h2>
-        <p class="text-gray-300 mt-2 text-center md:text-left text-sm md:text-base">Paste your video URL and choose format</p>
-      </div>
-
-      <div class="p-4 md:p-6 lg:p-8">
-        <form id="downloadForm" class="space-y-6">
-          <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-3">
-              <i class="fas fa-link mr-2"></i>Video URL
-            </label>
-            <div class="flex flex-col gap-3">
-              <input id="urlInput" type="url" class="w-full px-4 py-3 md:py-4 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-300 text-base md:text-lg" placeholder="https://www.youtube.com/watch?v=..." required>
-              <div class="flex gap-2">
-                <button type="button" id="pasteBtn" class="flex-1 px-4 md:px-6 py-3 md:py-4 bg-gradient-to-r from-purple-500 to-purple-600 text-white font-semibold rounded-xl hover:from-purple-600 hover:to-purple-700 transition-all duration-300 flex items-center justify-center gap-2 text-sm md:text-base">
-                  <i class="fas fa-paste"></i><span class="hidden sm:inline">Paste URL</span><span class="sm:hidden">Paste</span>
-                </button>
-                <button type="button" id="clearBtn" class="px-4 md:px-6 py-3 md:py-4 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-all duration-300 flex items-center justify-center gap-2">
-                  <i class="fas fa-times"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-3">Download Format</label>
-            <!-- HORIZONTAL ON ALL SCREENS (including mobile) -->
-            <div class="grid grid-cols-2 gap-4">
-              <div class="format-option">
-                <input class="hidden" type="radio" id="format-mp4" name="format" value="mp4" checked>
-                <label for="format-mp4" class="format-label p-4 md:p-5 transition-all duration-300 hover:border-purple-400 hover:bg-purple-50 flex flex-col items-center text-center">
-                  <div class="text-2xl md:text-3xl text-purple-600 mb-3"><i class="fas fa-film"></i></div>
-                  <div class="font-semibold text-gray-800">MP4 Video</div>
-                  <div class="text-sm text-gray-500 mt-1">High Quality Video</div>
-                  <div class="mt-3 text-xs text-purple-600 font-medium">HD Available</div>
-                </label>
-              </div>
-              <div class="format-option">
-                <input class="hidden" type="radio" id="format-mp3" name="format" value="mp3">
-                <label for="format-mp3" class="format-label p-4 md:p-5 transition-all duration-300 hover:border-green-400 hover:bg-green-50 flex flex-col items-center text-center">
-                  <div class="text-2xl md:text-3xl text-green-600 mb-3"><i class="fas fa-music"></i></div>
-                  <div class="font-semibold text-gray-800">MP3 Audio</div>
-                  <div class="text-sm text-gray-500 mt-1">128kbps Quality</div>
-                  <div class="mt-3 text-xs text-green-600 font-medium">Clear Audio</div>
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <button id="downloadBtn" type="submit" class="w-full py-4 md:py-5 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-base md:text-lg rounded-xl hover:from-purple-700 hover:to-pink-700 transition-transform duration-200 hover:scale-[1.015] shadow-lg flex items-center justify-center gap-3">
-            <i class="fas fa-download"></i> Download Now
-          </button>
-        </form>
-
-        <!-- Loading -->
-        <div id="loading" class="hidden text-center py-8">
-          <div class="flex justify-center mb-6">
-            <div class="relative">
-              <svg class="progress-ring w-20 h-20" width="80" height="80">
-                <circle class="progress-ring-circle" stroke="#8b5cf6" stroke-width="4" fill="transparent" r="36" cx="40" cy="40" stroke-dasharray="226.08" stroke-dashoffset="226.08"/>
-              </svg>
-              <div class="absolute inset-0 grid place-items-center">
-                <i class="fas fa-sync-alt text-purple-600 text-2xl animate-spin"></i>
-              </div>
-            </div>
-          </div>
-          <h3 class="text-lg md:text-xl font-bold text-gray-800 mb-2">Processing Your Request</h3>
-          <p class="text-sm md:text-base text-gray-600 mb-6 px-4">This may take a minute depending on video length and quality</p>
-
-          <div class="grid grid-cols-3 gap-2 md:gap-4 max-w-md mx-auto px-4">
-            <div class="loading-step text-center">
-              <div class="step-icon w-10 h-10 md:w-12 md:h-12 bg-purple-100 rounded-full grid place-items-center mx-auto mb-2">
-                <i class="fas fa-search text-purple-600 text-sm md:text-base"></i>
-              </div>
-              <div class="step-text text-xs md:text-sm font-medium text-purple-600">Fetching Video</div>
-            </div>
-            <div class="loading-step text-center opacity-50">
-              <div class="step-icon w-10 h-10 md:w-12 md:h-12 bg-gray-100 rounded-full grid place-items-center mx-auto mb-2">
-                <i class="fas fa-cog text-gray-400 text-sm md:text-base"></i>
-              </div>
-              <div class="step-text text-xs md:text-sm font-medium text-gray-500">Processing</div>
-            </div>
-            <div class="loading-step text-center opacity-50">
-              <div class="step-icon w-10 h-10 md:w-12 md:h-12 bg-gray-100 rounded-full grid place-items-center mx-auto mb-2">
-                <i class="fas fa-download text-gray-400 text-sm md:text-base"></i>
-              </div>
-              <div class="step-text text-xs md:text-sm font-medium text-gray-500">Preparing</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Success -->
-        <div id="successResult" class="hidden bg-gradient-to-br from-green-50 to-emerald-100 border border-green-200 rounded-2xl p-4 md:p-6 mt-6">
-          <div class="flex flex-col md:flex-row items-center gap-4 mb-6 text-center md:text-left">
-            <div class="w-14 h-14 bg-green-500 rounded-full grid place-items-center"><i class="fas fa-check text-white text-2xl"></i></div>
-            <div>
-              <h3 class="text-xl md:text-2xl font-bold text-gray-800">Download Ready!</h3>
-              <p class="text-green-600 text-sm md:text-base">Your file is prepared for download</p>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6">
-            <div class="bg-white rounded-xl p-4 shadow-lg">
-              <h4 class="font-semibold text-gray-800 mb-3 flex items-center justify-center md:justify-start gap-2 text-sm md:text-base">
-                <i class="fas fa-image text-purple-600"></i> Video Preview
-              </h4>
-              <div id="thumbnailPreview" class="thumbnail-container aspect-video bg-gray-100 rounded-lg grid place-items-center"></div>
-            </div>
-
-            <div class="bg-white rounded-xl p-4 shadow-lg">
-              <h4 class="font-semibold text-gray-800 mb-3 flex items-center justify-center md:justify-start gap-2 text-sm md:text-base">
-                <i class="fas fa-info-circle text-blue-600"></i> File Information
-              </h4>
-              <div id="fileInfo" class="space-y-3 text-sm md:text-base"></div>
-            </div>
-          </div>
-
-          <div class="flex flex-col gap-3">
-            <a id="downloadLink" href="#" class="w-full py-3 md:py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-xl hover:from-green-600 hover:to-emerald-700 transition-colors duration-200 flex items-center justify-center gap-3 text-base md:text-lg">
-              <i class="fas fa-download"></i> Download File
-            </a>
-          </div>
-        </div>
-
-        <!-- Error -->
-        <div id="errorResult" class="hidden bg-gradient-to-br from-red-50 to-pink-100 border border-red-200 rounded-2xl p-4 md:p-6 mt-6">
-          <div class="flex flex-col md:flex-row items-center gap-4 mb-4 text-center md:text-left">
-            <div class="w-14 h-14 bg-red-500 rounded-full grid place-items-center"><i class="fas fa-exclamation-triangle text-white text-2xl"></i></div>
-            <div>
-              <h3 class="text-xl md:text-2xl font-bold text-gray-800">Download Failed</h3>
-              <p id="errorMessage" class="text-red-600 text-sm md:text-base">Error message will appear here</p>
-            </div>
-          </div>
-          <div class="flex flex-col gap-3 mt-6">
-            <button id="retryBtn" class="w-full py-3 bg-gradient-to-r from-red-500 to-pink-600 text-white font-semibold rounded-xl hover:from-red-600 hover:to-pink-700 transition-colors duration-200 flex items-center justify-center gap-2 text-sm md:text-base">
-              <i class="fas fa-redo"></i> Try Again
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Recent Downloads -->
-    <div class="bg-white rounded-3xl shadow-2xl overflow-hidden mb-8">
-      <div class="bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-4 px-4 md:px-6">
-        <h2 class="text-lg md:text-xl font-bold flex items-center justify-center md:justify-start gap-3">
-          <i class="fas fa-history"></i> Recent Downloads
-          <span id="historyCount" class="bg-white/20 text-white/90 text-xs md:text-sm px-2 py-1 rounded-full">0</span>
-        </h2>
-      </div>
-      <div class="p-4 md:p-6">
-        <div id="historyList" class="space-y-3 max-h-96 overflow-y-auto">
-          <div class="text-gray-500 text-center py-8 text-sm">
-            <i class="fas fa-inbox text-3xl mb-3 opacity-50"></i>
-            <div>No recent downloads yet</div>
-            <div class="text-xs mt-1">Your download history will appear here</div>
-          </div>
-        </div>
-        <div id="clearHistorySection" class="hidden mt-4 pt-4 border-t border-gray-100">
-          <button id="clearHistoryBtn" class="w-full py-3 bg-gray-100 text-gray-600 font-semibold rounded-xl hover:bg-gray-200 transition-colors duration-200 flex items-center justify-center gap-2 text-sm md:text-base">
-            <i class="fas fa-trash"></i> Clear All History
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Footer marquee -->
-    <div class="mt-6">
-      <div class="bg-gradient-to-r from-green-600 via-teal-600 to-blue-600 text-white py-3 px-4 md:px-6 rounded-2xl shadow-xl border border-green-400">
-        <marquee class="text-sm md:text-base font-semibold">
-          🔒 Secure & Private • All Rights Reserved by <b class="text-yellow-300">AMMZ</b> • Built with Advanced AI Technology 🚀
-        </marquee>
-      </div>
-    </div>
-
-    <footer class="text-center text-white/80 mt-8 py-4">
-      <p class="text-xs md:text-sm px-4">Files are automatically deleted after 24 hours • Professional Download Service</p>
-    </footer>
-  </div>
-
-  <!-- FIXED: Sticky header appears at 30px scroll (much earlier) -->
-  <script>
-    (() => {
-      const sticky = document.getElementById('stickyHeader');
-      const main = document.getElementById('mainHeader');
-      
-      function updateStickyHeader() {
-        const scrollY = window.pageYOffset || document.documentElement.scrollTop;
-        // CHANGED: Now triggers at 30px scroll (much earlier)
-        const showSticky = scrollY > 30;
-        
-        if(showSticky){
-          sticky.classList.add('is-visible');
-          main.classList.add('is-compact');
-        }else{
-          sticky.classList.remove('is-visible');
-          main.classList.remove('is-compact');
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📧</text></svg>">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FB&YT Downloader By AMMZ - Professional Video Downloader</title>
+    <style>
+        :root {
+            --primary: #8b5cf6;
+            --primary-dark: #7c3aed;
+            --secondary: #06d6a0;
+            --accent: #f59e0b;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --error: #ef4444;
+            --success: #10b981;
         }
-      }
 
-      // Use scroll listener for immediate response
-      window.addEventListener('scroll', updateStickyHeader, {passive:true});
-      updateStickyHeader(); // Initial check
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .neon-glow {
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+        }
+
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .slide-in {
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .thumbnail-container {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+        }
+
+        .thumbnail-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(139, 92, 246, 0.9), rgba(6, 214, 160, 0.8));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .thumbnail-container:hover .thumbnail-overlay {
+            opacity: 1;
+        }
+
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+
+        .progress-ring-circle {
+            transition: stroke-dashoffset 0.3s;
+        }
+
+        .thumbnail-loading {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Creator badge */
+        .creator-badge {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .creator-tooltip {
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+
+        .creator-badge:hover .creator-tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* OPTIMIZED STICKY HEADER - Simple CSS-only approach */
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            transform: translateY(-100%);
+            opacity: 0;
+            transition: transform 0.2s ease-out, opacity 0.2s ease-out;
+            will-change: transform, opacity;
+        }
+
+        .sticky-header.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .main-header {
+            transition: opacity 0.2s ease-out, max-height 0.3s ease-out;
+            max-height: 1000px;
+            overflow: hidden;
+        }
+
+        .main-header.hide {
+            opacity: 0;
+            max-height: 0;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        /* Compact stats */
+        .compact-stats {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.75rem;
+        }
+
+        /* Text truncate */
+        .truncate-2-lines {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            word-break: break-word;
+        }
+
+        /* History panel styles */
+        .history-panel {
+            transition: all 0.3s ease;
+        }
+
+        .history-item {
+            border-left: 4px solid #8b5cf6;
+            transition: all 0.2s ease;
+        }
+
+        .history-item:hover {
+            transform: translateX(4px);
+            border-left-color: #06d6a0;
+        }
+
+        /* Mobile-specific improvements */
+        @media (max-width: 640px) {
+            body {
+                font-size: 14px;
+            }
+
+            .container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            /* Header adjustments */
+            .main-header h1 {
+                font-size: 2rem !important;
+            }
+
+            .main-header p {
+                font-size: 1rem !important;
+            }
+
+            /* Stats badges */
+            .glass-effect {
+                padding: 0.5rem 1rem !important;
+                font-size: 0.875rem;
+            }
+
+            /* Form elements */
+            .format-label {
+                padding: 1rem !important;
+            }
+
+            .format-label .text-3xl {
+                font-size: 1.5rem !important;
+            }
+
+            /* Buttons */
+            button, .btn {
+                padding: 0.75rem 1rem !important;
+                font-size: 0.875rem;
+            }
+
+            /* History items */
+            .history-item {
+                flex-direction: column;
+                align-items: flex-start !important;
+            }
+
+            .history-item-content {
+                width: 100%;
+                margin-bottom: 0.75rem;
+            }
+
+            .history-item-buttons {
+                width: 100%;
+                display: flex;
+                gap: 0.5rem;
+            }
+
+            .history-item-buttons button,
+            .history-item-buttons a {
+                flex: 1;
+            }
+
+            /* Success result grid */
+            .success-result-grid {
+                grid-template-columns: 1fr !important;
+            }
+
+            /* Creator badge mobile positioning */
+            .creator-badge {
+                bottom: 10px;
+                right: 10px;
+            }
+
+            .creator-badge button {
+                width: 3rem !important;
+                height: 3rem !important;
+            }
+
+            .creator-tooltip {
+                width: 16rem !important;
+                right: 0;
+                bottom: 100%;
+                margin-bottom: 0.5rem;
+            }
+
+            /* Thumbnail preview */
+            .thumbnail-preview-mobile {
+                max-height: 200px;
+            }
+
+            /* Marquee text */
+            marquee {
+                font-size: 0.75rem !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-header h1 {
+                font-size: 1.75rem !important;
+            }
+
+            .format-option {
+                width: 100%;
+            }
+
+            .sticky-header .flex {
+                flex-wrap: wrap;
+            }
+
+            .compact-stats {
+                font-size: 0.625rem;
+                padding: 0.25rem 0.5rem;
+            }
+        }
+
+        /* Aspect ratio fix for thumbnails */
+        .aspect-video {
+            aspect-ratio: 16 / 9;
+        }
+
+        /* Improve button responsiveness */
+        .btn-responsive {
+            width: 100%;
+        }
+
+        @media (min-width: 640px) {
+            .btn-responsive {
+                width: auto;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-purple-600 via-pink-600 to-red-500">
+    <!-- Creator Badge - Fixed Position -->
+    <div class="creator-badge">
+        <div class="relative">
+            <button id="creatorBtn" class="w-14 h-14 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full shadow-2xl flex items-center justify-center text-white text-xl hover:from-purple-700 hover:to-pink-700 transition-all duration-300 transform hover:scale-110">
+                <i class="fas fa-user"></i>
+            </button>
+            <div class="creator-tooltip absolute bottom-full right-0 mb-3 w-64 bg-white rounded-2xl shadow-2xl p-4">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-3">
+                        A
+                    </div>
+                    <h3 class="font-bold text-gray-800 text-lg">Aung Myo Myat Zaw</h3>
+                    <p class="text-gray-600 text-sm mt-1">Full Stack Developer</p>
+                    <div class="flex justify-center space-x-3 mt-3">
+                        <a href="#" class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 hover:bg-purple-100 hover:text-purple-600 transition-colors">
+                            <i class="fab fa-github"></i>
+                        </a>
+                        <a href="#" class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 hover:bg-blue-100 hover:text-blue-600 transition-colors">
+                            <i class="fab fa-linkedin"></i>
+                        </a>
+                        <a href="#" class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 hover:bg-pink-100 hover:text-pink-600 transition-colors">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                    </div>
+                    <button class="w-full mt-3 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold text-sm hover:from-purple-700 hover:to-pink-700 transition-all">
+                        View Portfolio
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Marquee -->
+    <div class="bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 text-white py-3 px-4 md:px-6 border-b border-purple-400 neon-glow">
+        <marquee class="text-sm md:text-base font-semibold">
+            ✨ This website was created by <b class="text-yellow-300">Aung Myo Myat Zaw</b> ✨
+        </marquee>
+    </div>
+
+    <!-- Sticky Header (Shows on scroll) -->
+    <div id="stickyHeader" class="sticky-header bg-gradient-to-r from-purple-600/95 to-pink-600/95 border-b border-white/20 backdrop-blur-md">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex items-center justify-between flex-wrap gap-2">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-cloud-download-alt text-white"></i>
+                    </div>
+                    <h1 class="text-white font-bold text-base md:text-lg">FB&YT Downloader</h1>
+                </div>
+                <div class="flex space-x-2">
+                    <div class="compact-stats glass-effect text-white/80 rounded-lg">
+                        <i class="fas fa-bolt text-yellow-400 mr-1"></i>Fast
+                    </div>
+                    <div class="compact-stats glass-effect text-white/80 rounded-lg">
+                        <i class="fas fa-shield-alt text-green-400 mr-1"></i>Secure
+                    </div>
+                    <div class="compact-stats glass-effect text-white/80 rounded-lg">
+                        <i class="fas fa-infinity text-blue-400 mr-1"></i>Free
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 py-6 max-w-4xl">
+        <!-- Main Header (Visible initially) -->
+        <header id="mainHeader" class="main-header text-center mb-8 slide-in">
+            <div class="flex flex-col items-center justify-center gap-4 mb-6">
+                <div class="glass-effect p-4 rounded-2xl">
+                    <i class="fas fa-cloud-download-alt text-4xl text-white"></i>
+                </div>
+                <h1 class="text-3xl md:text-4xl lg:text-5xl font-black text-white neon-glow">
+                    FB&YT Downloader
+                </h1>
+            </div>
+            <p class="text-lg md:text-xl text-white/90 mb-6 font-medium px-4">
+                Download High Quality Videos & Audio from Multiple Platforms
+            </p>
+            
+            <!-- Stats -->
+            <div class="flex flex-wrap justify-center gap-3 md:gap-4 mb-6 px-4">
+                <div class="glass-effect px-4 md:px-6 py-3 rounded-xl text-white font-semibold flex items-center gap-2">
+                    <i class="fas fa-bolt text-yellow-400"></i>
+                    <span class="text-sm md:text-base">Lightning Fast</span>
+                </div>
+                <div class="glass-effect px-4 md:px-6 py-3 rounded-xl text-white font-semibold flex items-center gap-2">
+                    <i class="fas fa-shield-alt text-green-400"></i>
+                    <span class="text-sm md:text-base">100% Secure</span>
+                </div>
+                <div class="glass-effect px-4 md:px-6 py-3 rounded-xl text-white font-semibold flex items-center gap-2">
+                    <i class="fas fa-infinity text-blue-400"></i>
+                    <span class="text-sm md:text-base">Unlimited Downloads</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Download Card -->
+        <div class="bg-white rounded-3xl shadow-2xl overflow-hidden mb-8 slide-in" style="animation-delay: 0.1s;">
+            <!-- Card Header -->
+            <div class="bg-gradient-to-r from-gray-900 to-gray-800 text-white py-4 md:py-6 px-4 md:px-8">
+                <h2 class="text-xl md:text-2xl font-bold flex items-center justify-center md:justify-start gap-3">
+                    <i class="fas fa-download"></i>
+                    Download Content
+                </h2>
+                <p class="text-gray-300 mt-2 text-center md:text-left text-sm md:text-base">Paste your video URL and choose format</p>
+            </div>
+
+            <!-- Card Body -->
+            <div class="p-4 md:p-6 lg:p-8">
+                <!-- Download Form -->
+                <form id="downloadForm" class="space-y-6">
+                    <!-- URL Input -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-3">
+                            <i class="fas fa-link mr-2"></i>Video URL
+                        </label>
+                        <div class="flex flex-col gap-3">
+                            <input 
+                                type="url" 
+                                id="urlInput"
+                                class="w-full px-4 py-3 md:py-4 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-300 text-base md:text-lg"
+                                placeholder="https://www.youtube.com/watch?v=..."
+                                required
+                            >
+                            <div class="flex gap-2">
+                                <button 
+                                    type="button" 
+                                    id="pasteBtn"
+                                    class="flex-1 px-4 md:px-6 py-3 md:py-4 bg-gradient-to-r from-purple-500 to-purple-600 text-white font-semibold rounded-xl hover:from-purple-600 hover:to-purple-700 transition-all duration-300 flex items-center justify-center gap-2 text-sm md:text-base"
+                                >
+                                    <i class="fas fa-paste"></i>
+                                    <span class="hidden sm:inline">Paste URL</span>
+                                    <span class="sm:hidden">Paste</span>
+                                </button>
+                                <button 
+                                    type="button" 
+                                    id="clearBtn"
+                                    class="px-4 md:px-6 py-3 md:py-4 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-all duration-300 flex items-center justify-center gap-2"
+                                >
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Format Selection -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-3">
+                            <i class="fas fa-format mr-2"></i>Download Format
+                        </label>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="format-option">
+                                <input type="radio" id="format-mp4" name="format" value="mp4" checked class="hidden">
+                                <label for="format-mp4" class="format-label cursor-pointer border-2 border-gray-200 rounded-xl p-4 md:p-5 transition-all duration-300 hover:border-purple-400 hover:bg-purple-50 flex flex-col items-center text-center">
+                                    <div class="text-2xl md:text-3xl text-purple-600 mb-3">
+                                        <i class="fas fa-film"></i>
+                                    </div>
+                                    <div class="font-semibold text-gray-800">MP4 Video</div>
+                                    <div class="text-sm text-gray-500 mt-1">High Quality Video</div>
+                                    <div class="mt-3 text-xs text-purple-600 font-medium">
+                                        <i class="fas fa-hd-video mr-1"></i>HD Available
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="format-option">
+                                <input type="radio" id="format-mp3" name="format" value="mp3" class="hidden">
+                                <label for="format-mp3" class="format-label cursor-pointer border-2 border-gray-200 rounded-xl p-4 md:p-5 transition-all duration-300 hover:border-green-400 hover:bg-green-50 flex flex-col items-center text-center">
+                                    <div class="text-2xl md:text-3xl text-green-600 mb-3">
+                                        <i class="fas fa-music"></i>
+                                    </div>
+                                    <div class="font-semibold text-gray-800">MP3 Audio</div>
+                                    <div class="text-sm text-gray-500 mt-1">128kbps Quality</div>
+                                    <div class="mt-3 text-xs text-green-600 font-medium">
+                                        <i class="fas fa-waveform mr-1"></i>Clear Audio
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Download Button -->
+                    <button 
+                        type="submit" 
+                        id="downloadBtn"
+                        class="w-full py-4 md:py-5 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-base md:text-lg rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center justify-center gap-3 pulse-animation"
+                    >
+                        <i class="fas fa-download"></i>
+                        Download Now
+                    </button>
+                </form>
+
+                <!-- Loading Indicator -->
+                <div id="loading" class="hidden text-center py-8">
+                    <div class="flex justify-center mb-6">
+                        <div class="relative">
+                            <svg class="progress-ring w-20 h-20" width="80" height="80">
+                                <circle class="progress-ring-circle" stroke="#8b5cf6" stroke-width="4" fill="transparent" r="36" cx="40" cy="40" stroke-dasharray="226.08" stroke-dashoffset="226.08"/>
+                            </svg>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <i class="fas fa-sync-alt text-purple-600 text-2xl animate-spin"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <h3 class="text-lg md:text-xl font-bold text-gray-800 mb-2">Processing Your Request</h3>
+                    <p class="text-sm md:text-base text-gray-600 mb-6 px-4">This may take a minute depending on video length and quality</p>
+                    
+                    <!-- Progress Steps -->
+                    <div class="grid grid-cols-3 gap-2 md:gap-4 max-w-md mx-auto px-4">
+                        <div class="loading-step text-center">
+                            <div class="step-icon w-10 h-10 md:w-12 md:h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                                <i class="fas fa-search text-purple-600 text-sm md:text-base"></i>
+                            </div>
+                            <div class="step-text text-xs md:text-sm font-medium text-purple-600">Fetching Video</div>
+                        </div>
+                        <div class="loading-step text-center opacity-50">
+                            <div class="step-icon w-10 h-10 md:w-12 md:h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                                <i class="fas fa-cog text-gray-400 text-sm md:text-base"></i>
+                            </div>
+                            <div class="step-text text-xs md:text-sm font-medium text-gray-500">Processing</div>
+                        </div>
+                        <div class="loading-step text-center opacity-50">
+                            <div class="step-icon w-10 h-10 md:w-12 md:h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                                <i class="fas fa-download text-gray-400 text-sm md:text-base"></i>
+                            </div>
+                            <div class="step-text text-xs md:text-sm font-medium text-gray-500">Preparing</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Success Result -->
+                <div id="successResult" class="hidden bg-gradient-to-br from-green-50 to-emerald-100 border border-green-200 rounded-2xl p-4 md:p-6 mt-6">
+                    <div class="flex flex-col md:flex-row items-center gap-4 mb-6 text-center md:text-left">
+                        <div class="w-14 h-14 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-check text-white text-2xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl md:text-2xl font-bold text-gray-800">Download Ready!</h3>
+                            <p class="text-green-600 text-sm md:text-base">Your file is prepared for download</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6 success-result-grid">
+                        <!-- Thumbnail Preview -->
+                        <div class="bg-white rounded-xl p-4 shadow-lg">
+                            <h4 class="font-semibold text-gray-800 mb-3 flex items-center justify-center md:justify-start gap-2 text-sm md:text-base">
+                                <i class="fas fa-image text-purple-600"></i>
+                                Video Preview
+                            </h4>
+                            <div id="thumbnailPreview" class="thumbnail-container thumbnail-preview-mobile aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
+                                <!-- Thumbnail will be inserted here -->
+                            </div>
+                        </div>
+                        
+                        <!-- File Information -->
+                        <div class="bg-white rounded-xl p-4 shadow-lg">
+                            <h4 class="font-semibold text-gray-800 mb-3 flex items-center justify-center md:justify-start gap-2 text-sm md:text-base">
+                                <i class="fas fa-info-circle text-blue-600"></i>
+                                File Information
+                            </h4>
+                            <div id="fileInfo" class="space-y-3 text-sm md:text-base">
+                                <!-- File info will be inserted here -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Download Actions -->
+                    <div class="flex flex-col gap-3">
+                        <a href="#" id="downloadLink" class="w-full py-3 md:py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-300 flex items-center justify-center gap-3 text-base md:text-lg">
+                            <i class="fas fa-download"></i>
+                            Download File
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Error Result -->
+                <div id="errorResult" class="hidden bg-gradient-to-br from-red-50 to-pink-100 border border-red-200 rounded-2xl p-4 md:p-6 mt-6">
+                    <div class="flex flex-col md:flex-row items-center gap-4 mb-4 text-center md:text-left">
+                        <div class="w-14 h-14 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-white text-2xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl md:text-2xl font-bold text-gray-800">Download Failed</h3>
+                            <p id="errorMessage" class="text-red-600 text-sm md:text-base">Error message will appear here</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col gap-3 mt-6">
+                        <button id="retryBtn" class="w-full py-3 bg-gradient-to-r from-red-500 to-pink-600 text-white font-semibold rounded-xl hover:from-red-600 hover:to-pink-700 transition-all duration-300 flex items-center justify-center gap-2 text-sm md:text-base">
+                            <i class="fas fa-redo"></i>
+                            Try Again
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Downloads Section (Below Download Card) -->
+        <div class="bg-white rounded-3xl shadow-2xl overflow-hidden mb-8 slide-in" style="animation-delay: 0.2s;">
+            <!-- Section Header -->
+            <div class="bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-4 px-4 md:px-6">
+                <h2 class="text-lg md:text-xl font-bold flex items-center justify-center md:justify-start gap-3">
+                    <i class="fas fa-history"></i>
+                    Recent Downloads
+                    <span id="historyCount" class="bg-white/20 text-white/90 text-xs md:text-sm px-2 py-1 rounded-full">
+                        0
+                    </span>
+                </h2>
+            </div>
+
+            <!-- History Content -->
+            <div class="p-4 md:p-6">
+                <div id="historyList" class="space-y-3 max-h-96 overflow-y-auto">
+                    <!-- History items will be dynamically added here -->
+                    <div class="text-gray-500 text-center py-8 text-sm">
+                        <i class="fas fa-inbox text-3xl mb-3 opacity-50"></i>
+                        <div>No recent downloads yet</div>
+                        <div class="text-xs mt-1">Your download history will appear here</div>
+                    </div>
+                </div>
+                
+                <!-- Clear History Button -->
+                <div id="clearHistorySection" class="hidden mt-4 pt-4 border-t border-gray-100">
+                    <button id="clearHistoryBtn" class="w-full py-3 bg-gray-100 text-gray-600 font-semibold rounded-xl hover:bg-gray-200 transition-all duration-300 flex items-center justify-center gap-2 text-sm md:text-base">
+                        <i class="fas fa-trash"></i>
+                        Clear All History
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Marquee -->
+        <div class="mt-6">
+            <div class="bg-gradient-to-r from-green-600 via-teal-600 to-blue-600 text-white py-3 px-4 md:px-6 rounded-2xl shadow-xl border border-green-400 neon-glow">
+                <marquee class="text-sm md:text-base font-semibold">
+                    🔒 Secure & Private • All Rights Reserved by
+                    <b class="text-yellow-300 transition-all duration-200">AMMZ</b> 
+                    • Built with Advanced AI Technology 🚀
+                </marquee>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="text-center text-white/80 mt-8 py-4">
+            <p class="text-xs md:text-sm px-4">Files are automatically deleted after 24 hours • Professional Download Service</p>
+        </footer>
+    </div>
+
+    <!-- OPTIMIZED HEADER SWITCHING SCRIPT (SEPARATE FROM YOUR DOWNLOAD FUNCTIONS) -->
+    <script>
+    (function() {
+        'use strict';
+        
+        const stickyHeader = document.getElementById('stickyHeader');
+        const mainHeader = document.getElementById('mainHeader');
+        const SCROLL_THRESHOLD = 150;
+        let lastScrollY = 0;
+        let ticking = false;
+
+        function updateHeaders() {
+            const currentScrollY = window.pageYOffset || document.documentElement.scrollTop;
+            
+            if (currentScrollY > SCROLL_THRESHOLD) {
+                // Show sticky, hide main
+                if (!stickyHeader.classList.contains('show')) {
+                    stickyHeader.classList.add('show');
+                    mainHeader.classList.add('hide');
+                }
+            } else {
+                // Hide sticky, show main
+                if (stickyHeader.classList.contains('show')) {
+                    stickyHeader.classList.remove('show');
+                    mainHeader.classList.remove('hide');
+                }
+            }
+            
+            lastScrollY = currentScrollY;
+            ticking = false;
+        }
+
+        function requestTick() {
+            if (!ticking) {
+                requestAnimationFrame(updateHeaders);
+                ticking = true;
+            }
+        }
+
+        // Passive listener for better performance
+        window.addEventListener('scroll', requestTick, { passive: true });
+        
+        // Initial check
+        updateHeaders();
     })();
-  </script>
+    </script>
 
-  <!-- Your existing downloader logic (unchanged) -->
-  <script>
-  // Configuration
-    // Get API_URL injected by server
-const API_URL =  "https://zqnftzmzsxc2lwd5tlj72bp4tu0iviop.lambda-url.ap-southeast-2.on.aws/";
+    <!-- YOUR ORIGINAL DOWNLOAD SCRIPT (UNTOUCHED) -->
+    <script>
+       // Configuration
+const API_URL = 'https://zqnftzmzsxc2lwd5tlj72bp4tu0iviop.lambda-url.ap-southeast-2.on.aws/';
 
-// DOM Elements
-const downloadForm = document.getElementById('downloadForm');
 // DOM Elements
 const downloadForm = document.getElementById('downloadForm');
 const urlInput = document.getElementById('urlInput');
@@ -458,12 +768,15 @@ function setProgress(percent) {
 
 // Render download history
 function renderHistory() {
+    // Clear expired items (older than 24 hours)
     const now = Date.now();
     downloadHistory = downloadHistory.filter(item => {
-        return (now - item.timestamp) < 24 * 60 * 60 * 1000;
+        return (now - item.timestamp) < 24 * 60 * 60 * 1000; // 24 hours
     });
     
     localStorage.setItem('downloadHistory', JSON.stringify(downloadHistory));
+    
+    // Update history count
     historyCount.textContent = downloadHistory.length;
     
     if (downloadHistory.length === 0) {
@@ -516,6 +829,7 @@ function renderHistory() {
     `).join('');
 }
 
+// Helper function to get platform color
 function getPlatformColor(platform) {
     const colors = {
         'youtube': 'red',
@@ -525,6 +839,7 @@ function getPlatformColor(platform) {
     return colors[platform] || 'gray';
 }
 
+// Add item to history
 function addToHistory(data) {
     const historyItem = {
         id: Date.now().toString(),
@@ -532,9 +847,13 @@ function addToHistory(data) {
         ...data
     };
     
+    // Remove if already exists (prevent duplicates)
     downloadHistory = downloadHistory.filter(item => item.download_url !== data.download_url);
+    
+    // Add to beginning of array
     downloadHistory.unshift(historyItem);
     
+    // Keep only last 10 items
     if (downloadHistory.length > 10) {
         downloadHistory = downloadHistory.slice(0, 10);
     }
@@ -543,12 +862,14 @@ function addToHistory(data) {
     renderHistory();
 }
 
+// Remove item from history
 function removeFromHistory(id) {
     downloadHistory = downloadHistory.filter(item => item.id !== id);
     localStorage.setItem('downloadHistory', JSON.stringify(downloadHistory));
     renderHistory();
 }
 
+// Clear all history
 function clearAllHistory() {
     if (confirm('Are you sure you want to clear all download history?')) {
         downloadHistory = [];
@@ -557,7 +878,9 @@ function clearAllHistory() {
     }
 }
 
+// Redownload item
 function redownloadItem(url, title, format) {
+    // Create a temporary download link
     const link = document.createElement('a');
     link.href = url;
     link.download = `${title}.${format}`;
@@ -567,42 +890,62 @@ function redownloadItem(url, title, format) {
     document.body.removeChild(link);
 }
 
+// Paste from clipboard
 pasteBtn.addEventListener('click', async () => {
     try {
         const text = await navigator.clipboard.readText();
         urlInput.value = text;
         urlInput.focus();
+        
+        // Show success feedback
         const originalText = pasteBtn.innerHTML;
         pasteBtn.innerHTML = '<i class="fas fa-check"></i> <span class="hidden sm:inline">Pasted!</span><span class="sm:hidden">✓</span>';
-        pasteBtn.classList.remove('from-purple-500','to-purple-600');
-        pasteBtn.classList.add('from-green-500','to-green-600');
+        pasteBtn.classList.remove('from-purple-500', 'to-purple-600');
+        pasteBtn.classList.add('from-green-500', 'to-green-600');
+        
         setTimeout(() => {
             pasteBtn.innerHTML = originalText;
-            pasteBtn.classList.remove('from-green-500','to-green-600');
-            pasteBtn.classList.add('from-purple-500','to-purple-600');
+            pasteBtn.classList.remove('from-green-500', 'to-green-600');
+            pasteBtn.classList.add('from-purple-500', 'to-purple-600');
         }, 2000);
     } catch (err) {
         alert('Unable to paste from clipboard. Please paste manually.');
     }
 });
 
+// Clear form
 clearBtn.addEventListener('click', () => {
     urlInput.value = '';
     urlInput.focus();
     resetForm();
 });
 
+// Clear history
 clearHistoryBtn.addEventListener('click', clearAllHistory);
 
+// Form submission
 downloadForm.addEventListener('submit', async (e) => {
     e.preventDefault();
+    
     const url = urlInput.value.trim();
     const format = document.querySelector('input[name="format"]:checked').value;
-    if (!url) { showError('Please enter a valid URL'); return; }
-    if (!isValidUrl(url)) { showError('Please enter a valid YouTube or TikTok URL'); return; }
+    
+    if (!url) {
+        showError('Please enter a valid URL');
+        return;
+    }
+    
+    // Validate URL
+    if (!isValidUrl(url)) {
+        showError('Please enter a valid YouTube or TikTok URL');
+        return;
+    }
+    
+    // Start download process
     startDownload(url, format);
 });
 
+// Helper function to validate URLs
 function isValidUrl(string) {
     try {
         const url = new URL(string);
@@ -610,165 +953,258 @@ function isValidUrl(string) {
                url.hostname.includes('youtu.be') || 
                url.hostname.includes('tiktok.com') ||
                url.hostname.includes('facebook.com');
-    } catch (_) { return false; }
+    } catch (_) {
+        return false;
+    }
 }
 
+// Start download process
 async function startDownload(url, format) {
+    // Reset UI
     resetUI();
     showLoading();
+    
     try {
+        // Update progress
         setProgress(30);
+        
         const response = await fetch(API_URL, {
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({url,format})
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                url: url,
+                format: format
+            })
         });
+        
+        // Update progress
         setProgress(70);
+        
         const data = await response.json();
-        if (!response.ok) throw new Error(data.error || 'Server error');
+        
+        if (!response.ok) {
+            throw new Error(data.error || 'Server error');
+        }
+        
         if (data.success) {
+            // Complete progress
             setProgress(100);
+            
+            // Add to history
             addToHistory(data);
-            setTimeout(() => { showSuccess(data, url); }, 800);
+            
+            // Simulate processing delay for better UX
+            setTimeout(() => {
+                showSuccess(data, url);
+            }, 1000);
         } else {
             throw new Error(data.error || 'Download failed');
         }
-    } catch (error) { showError(error.message); }
+        
+    } catch (error) {
+        showError(error.message);
+    }
 }
 
-function resetUI(){
+// UI Functions
+function resetUI() {
     successResult.classList.add('hidden');
     errorResult.classList.add('hidden');
     loading.classList.add('hidden');
-    downloadBtn.disabled=false;
+    downloadBtn.disabled = false;
+    
+    // Reset progress
     setProgress(0);
 }
-function resetForm(){ resetUI(); urlInput.value=''; urlInput.focus(); }
 
-function showLoading(){
-    downloadBtn.disabled=true;
+function resetForm() {
+    resetUI();
+    urlInput.value = ''; // Clear input for next download
+    urlInput.focus();
+}
+
+function showLoading() {
+    downloadBtn.disabled = true;
     loading.classList.remove('hidden');
     successResult.classList.add('hidden');
     errorResult.classList.add('hidden');
+    
+    // Show loading thumbnail
     thumbnailPreview.innerHTML = `
-      <div class="w-full h-full thumbnail-loading rounded-lg grid place-items-center">
-        <div class="text-center text-gray-500">
-          <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
-          <div class="text-sm">Loading thumbnail...</div>
+        <div class="w-full h-full thumbnail-loading rounded-lg flex items-center justify-center">
+            <div class="text-center text-gray-500">
+                <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                <div class="text-sm">Loading thumbnail...</div>
+            </div>
         </div>
-      </div>`;
+    `;
+    
+    // Animate progress steps
     const steps = document.querySelectorAll('.loading-step');
-    steps.forEach((step, i) => setTimeout(() => {
-      step.classList.remove('opacity-50');
-      step.querySelector('.step-icon').classList.remove('bg-gray-100');
-      step.querySelector('.step-icon').classList.add('bg-purple-100');
-      step.querySelector('.step-text').classList.remove('text-gray-500');
-      step.querySelector('.step-text').classList.add('text-purple-600');
-    }, i*900));
+    steps.forEach((step, index) => {
+        setTimeout(() => {
+            step.classList.remove('opacity-50');
+            step.querySelector('.step-icon').classList.remove('bg-gray-100');
+            step.querySelector('.step-icon').classList.add('bg-purple-100');
+            step.querySelector('.step-text').classList.remove('text-gray-500');
+            step.querySelector('.step-text').classList.add('text-purple-600');
+        }, index * 1000);
+    });
 }
 
-function showSuccess(data, originalUrl){
+function showSuccess(data, originalUrl) {
     loading.classList.add('hidden');
     successResult.classList.remove('hidden');
-    urlInput.value='';
+    
+    // Clear input for next download
+    urlInput.value = '';
+    
+    // Use the actual video title from API or fallback
     const videoTitle = data.title || 'Video Download';
+    const displayFilename = data.filename || `download.${data.format}`;
+    
+    // Generate and display thumbnail (simple approach from second file)
     const thumbnailUrl = generateYouTubeThumbnail(originalUrl);
     if (thumbnailUrl) {
-      thumbnailPreview.innerHTML = `
-        <img src="${thumbnailUrl}" alt="${videoTitle}" class="w-full h-full object-cover rounded-lg"
-             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
-        <div class="hidden w-full h-full bg-gray-100 rounded-lg grid place-items-center">
-          <div class="text-center text-gray-500 p-4">
-            <i class="fas fa-file-${data.format === 'mp3' ? 'audio' : 'video'} text-4xl mb-2"></i>
-            <div class="font-semibold text-sm">${videoTitle}</div>
-          </div>
-        </div>`;
+        thumbnailPreview.innerHTML = `
+            <img src="${thumbnailUrl}" alt="${videoTitle}" class="w-full h-full object-cover rounded-lg" 
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+            <div class="hidden w-full h-full bg-gray-100 rounded-lg flex items-center justify-center">
+                <div class="text-center text-gray-500 p-4">
+                    <i class="fas fa-file-${data.format === 'mp3' ? 'audio' : 'video'} text-4xl mb-2"></i>
+                    <div class="font-semibold text-sm">${videoTitle}</div>
+                </div>
+            </div>
+        `;
     } else {
-      thumbnailPreview.innerHTML = `
-        <div class="text-center text-gray-500 p-4">
-          <i class="fas fa-file-${data.format === 'mp3' ? 'audio' : 'video'} text-4xl md:text-6xl mb-4"></i>
-          <div class="font-semibold text-base md:text-lg">${videoTitle}</div>
-          <div class="text-xs md:text-sm mt-2 text-gray-400">${data.format.toUpperCase()} File</div>
-        </div>`;
+        thumbnailPreview.innerHTML = `
+            <div class="text-center text-gray-500 p-4">
+                <i class="fas fa-file-${data.format === 'mp3' ? 'audio' : 'video'} text-4xl md:text-6xl mb-4"></i>
+                <div class="font-semibold text-base md:text-lg">${videoTitle}</div>
+                <div class="text-xs md:text-sm mt-2 text-gray-400">${data.format.toUpperCase()} File</div>
+            </div>
+        `;
     }
+    
+    // Create file info
     fileInfo.innerHTML = `
-      <div class="flex justify-between items-center py-2 border-b border-gray-100">
-        <span class="font-medium text-gray-600 text-xs md:text-sm">File Name:</span>
-        <span class="font-semibold text-gray-800 truncate ml-2 text-xs md:text-sm max-w-[60%]">${videoTitle}</span>
-      </div>
-      <div class="flex justify-between items-center py-2 border-b border-gray-100">
-        <span class="font-medium text-gray-600 text-xs md:text-sm">File Size:</span>
-        <span class="font-semibold text-blue-600 text-xs md:text-sm">${data.size_mb || 'Unknown'} MB</span>
-      </div>
-      <div class="flex justify-between items-center py-2 border-b border-gray-100">
-        <span class="font-medium text-gray-600 text-xs md:text-sm">Format:</span>
-        <span class="font-semibold text-purple-600 text-xs md:text-sm">${data.format.toUpperCase()}</span>
-      </div>
-      <div class="flex justify-between items-center py-2">
-        <span class="font-medium text-gray-600 text-xs md:text-sm">Platform:</span>
-        <span class="font-semibold text-green-600 capitalize text-xs md:text-sm">${data.platform || 'Unknown'}</span>
-      </div>`;
-    const cleanTitle = (videoTitle || 'download').replace(/[<>:"/\\|?*]/g,'').substring(0,100);
+        <div class="flex justify-between items-center py-2 border-b border-gray-100">
+            <span class="font-medium text-gray-600 text-xs md:text-sm">File Name:</span>
+            <span class="font-semibold text-gray-800 truncate ml-2 text-xs md:text-sm max-w-[60%]">${videoTitle}</span>
+        </div>
+        <div class="flex justify-between items-center py-2 border-b border-gray-100">
+            <span class="font-medium text-gray-600 text-xs md:text-sm">File Size:</span>
+            <span class="font-semibold text-blue-600 text-xs md:text-sm">${data.size_mb || 'Unknown'} MB</span>
+        </div>
+        <div class="flex justify-between items-center py-2 border-b border-gray-100">
+            <span class="font-medium text-gray-600 text-xs md:text-sm">Format:</span>
+            <span class="font-semibold text-purple-600 text-xs md:text-sm">${data.format.toUpperCase()}</span>
+        </div>
+        <div class="flex justify-between items-center py-2">
+            <span class="font-medium text-gray-600 text-xs md:text-sm">Platform:</span>
+            <span class="font-semibold text-green-600 capitalize text-xs md:text-sm">${data.platform || 'Unknown'}</span>
+        </div>
+    `;
+    
+    // Set download attribute with proper filename
+    const cleanTitle = videoTitle.replace(/[<>:"/\\|?*]/g, '').substring(0, 100);
+    // Set download link
     downloadLink.href = data.download_url;
     downloadLink.setAttribute('download', `${cleanTitle}.${data.format}`);
     downloadLink.setAttribute('target', '_blank');
-    downloadLink.onclick = () => true;
+    
+    // Remove any existing click handlers and add direct download
+    downloadLink.onclick = function(e) {
+        // Let the browser handle the download naturally
+        // The download attribute should force download instead of playing
+        return true;
+    };
+    
+    // Update button text to be clearer
     downloadLink.innerHTML = '<i class="fas fa-download"></i> Download File Now';
-    successResult.scrollIntoView({behavior:'smooth',block:'start'});
+    
+    // Scroll to result
+    successResult.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-function generateYouTubeThumbnail(url){
-    try{
-        const u = new URL(url);
-        let id;
-        if(u.hostname.includes('youtu.be')) id = u.pathname.slice(1);
-        else if(u.hostname.includes('youtube.com')) id = u.searchParams.get('v');
-        if(id) return `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
-    }catch(e){}
+// Generate simple YouTube thumbnail URL (from second file)
+function generateYouTubeThumbnail(url) {
+    try {
+        const urlObj = new URL(url);
+        let videoId;
+        
+        if (urlObj.hostname.includes('youtu.be')) {
+            videoId = urlObj.pathname.slice(1);
+        } else if (urlObj.hostname.includes('youtube.com')) {
+            videoId = urlObj.searchParams.get('v');
+        }
+        
+        if (videoId) {
+            return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+        }
+    } catch (e) {
+        console.error('Error generating YouTube thumbnail:', e);
+    }
     return null;
 }
 
-function showError(message){
+function showError(message) {
     loading.classList.add('hidden');
     errorResult.classList.remove('hidden');
     errorMessage.textContent = message;
-    errorResult.scrollIntoView({behavior:'smooth',block:'start'});
+    
+    // Scroll to error
+    errorResult.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+// Event listeners for buttons
 retryBtn.addEventListener('click', () => {
     const url = urlInput.value;
     const format = document.querySelector('input[name="format"]:checked').value;
     startDownload(url, format);
 });
 
-urlInput.addEventListener('input', function(){
+// URL validation on input
+urlInput.addEventListener('input', function() {
     const url = this.value.trim();
-    if(url && isValidUrl(url)){
+    if (url && isValidUrl(url)) {
         this.classList.remove('border-gray-200');
-        this.classList.add('border-green-500','ring-2','ring-green-200');
-    }else if(url){
+        this.classList.add('border-green-500', 'ring-2', 'ring-green-200');
+    } else if (url) {
         this.classList.remove('border-gray-200');
-        this.classList.add('border-red-500','ring-2','ring-red-200');
-    }else{
-        this.classList.remove('border-green-500','border-red-500','ring-2','ring-green-200','ring-red-200');
+        this.classList.add('border-red-500', 'ring-2', 'ring-red-200');
+    } else {
+        this.classList.remove('border-green-500', 'border-red-500', 'ring-2', 'ring-green-200', 'ring-red-200');
         this.classList.add('border-gray-200');
     }
 });
 
-document.querySelectorAll('.format-option input').forEach(radio=>{
-    radio.addEventListener('change',function(){
-        document.querySelectorAll('.format-label').forEach(label=>{
-            label.classList.remove('border-purple-400','bg-purple-50','border-green-400','bg-green-50');
+// Format selection styling
+document.querySelectorAll('.format-option input').forEach(radio => {
+    radio.addEventListener('change', function() {
+        document.querySelectorAll('.format-label').forEach(label => {
+            label.classList.remove('border-purple-400', 'bg-purple-50', 'border-green-400', 'bg-green-50');
         });
-        const lab = this.nextElementSibling;
-        if(this.value==='mp4'){ lab.classList.add('border-purple-400','bg-purple-50'); }
-        else{ lab.classList.add('border-green-400','bg-green-50'); }
+        
+        const selectedLabel = this.nextElementSibling;
+        if (this.value === 'mp4') {
+            selectedLabel.classList.add('border-purple-400', 'bg-purple-50');
+        } else {
+            selectedLabel.classList.add('border-green-400', 'bg-green-50');
+        }
     });
 });
 
+// Initialize format selection
 document.querySelector('#format-mp4').dispatchEvent(new Event('change'));
+
+// Initialize history
 renderHistory();
+
+// Initialize
 resetUI();
-  </script>
+    </script>
 </body>
 </html>
