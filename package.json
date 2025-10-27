@@ -1,0 +1,12 @@
+{
+  "name": "fb-yt-downloader",
+  "version": "1.0.0",
+  "description": "Video downloader frontend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}
