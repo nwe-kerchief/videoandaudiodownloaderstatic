@@ -416,18 +416,7 @@
   <script>
   // Configuration
     // Get API_URL injected by server
-    const API_URL = window.API_URL;
-    
-    // Validate
-    if (!API_URL || API_URL === '{{API_URL}}') {
-      console.error('❌ API_URL not configured');
-      alert('Configuration error. Please set API_URL in Render environment.');
-    } else {
-      console.log('✅ API URL:', API_URL);
-    }
-
-// Add debug to see what's happening
-console.log('API_URL:', API_URL);
+const API_URL =  "https://zqnftzmzsxc2lwd5tlj72bp4tu0iviop.lambda-url.ap-southeast-2.on.aws/";
 
 // DOM Elements
 const downloadForm = document.getElementById('downloadForm');
